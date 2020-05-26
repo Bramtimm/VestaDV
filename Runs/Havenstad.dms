@@ -49,13 +49,13 @@ container Havenstad
 		// Include Invoer and defaults settings section, similar for each run
 		#include <%projDir%/model/RuimtelijkeData.dms>
 		#include <%projDir%/model/Kengetallen.dms>
-		
 		#include <%projDir%/model/EnergiePrijzen.dms>
 
 		container DefaultInstellingen
 		{
 			#include <%projDir%/Runs/DefaultSettings/Basis.dms>
-			#include <%projDir%/Runs/DefaultSettings/Rekenstap.dms>		
+			#include <%projDir%/Runs/DefaultSettings/Rekenstap.dms>
+			#include <%projDir%/Runs/DefaultSettings/Leidraad.dms>
 		}
 		
 		container SpecifiekeInstellingen := DefaultInstellingen/Basis
@@ -66,11 +66,10 @@ container Havenstad
 			unit<uint8> BsBase := Classifications/BebouwingsSectorBase;
 			attribute<bool> BS_isActive(BsBase) : [ true, true, false];
 			
-			parameter<string> NieuwbouwInputTemplate := 'EsdlNieuwbouw';
+			parameter<string> NieuwbouwInputTemplate  := 'EsdlNieuwbouw';
 			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
 			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
 
-			
 			container StartJaar := DefaultInstellingen/Basis;
 			
 			// Per rekenstap kun je hier specifieke instelling overrulen. De lijst van rekenstappen wordt gedefinieerd bij rekenstap
@@ -85,6 +84,7 @@ container Havenstad
 	#include <%projDir%/model/BeginSituatie.dms>
 	#include <%projDir%/model/TussenResultaten.dms>
 	#include <%projDir%/model/Resultaten.dms>
+	#include <%projDir%/model/stam/CalculationSchemes/LeidraadResultaten.dms>
 	#include <%projDir%/model/ConfigSettings.dms>
 	#include <%projDir%/model/ExportSettings.dms>
 }

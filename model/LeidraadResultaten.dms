@@ -5,7 +5,182 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 container LeidraadResultaten: using = "Model"
-{
+{ 
+	container Exports: isHidden = "True"
+	{
+		unit<uint32> PlanRegio           := Invoer/SpecifiekeInstellingen/PlanRegio;
+		unit<uint32> BestaandeWoningen   := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeWoning;
+		unit<uint32> BestaandeUtil       := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeUtil;
+		unit<uint32> BebouwingsObject    := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeWoning;
+		
+		container FolderInfo: isHidden = "True"
+		{
+			parameter<string> RunName        := Expand(., '%configName%');
+			// parameter<string> Last_Rekenstap := last(/rekenstap/name);
+			parameter<string> Last_Rekenstap := 'ZichtJaar';
+			
+			// parameter<string> Last_Rekenstap := 'StartJaar';
+			// parameter<string> RunName        := 'StartJaar';
+			
+			parameter<string> RegioNaam_GooiEnVechtstreek    := 'GooiEnVechtstreek';
+			parameter<string> RegioNaam_Hengelo              := 'Hengelo';
+			parameter<string> OutputFolder                   := '%localDataProjDir%/Results/RES_NHZ/'+RunName;
+			parameter<string> OutputFolder_GooiEnVechtstreek := '%localDataProjDir%/Results/'+RegioNaam_GooiEnVechtstreek+'/'+RunName;
+			parameter<string> OutputFolder_Hengelo           := '%localDataProjDir%/Results/'+RegioNaam_Hengelo+'/'+RunName;
+			
+			parameter<string> StudieGebied_GooiEnVechtstreek := 'GM0402,GM1942,GM0376,GM0417,GM0406,GM0457,GM1696'; //Hsum, Gooise Meren,Blaricum,Laren,Weesp,Wijdemeren
+			parameter<string> StudieGebied_Hengelo           := 'GM0164'; //Hengelo
+		}	
+
+		container ESDL
+		{
+			// parameter<string> Generate_PerPlanRegio := Generate_PerPlanRegio_GooiEnVechtstreek + Generate_PerPlanRegio_Hengelo;
+
+			// parameter<string> Generate_PerPlanRegio_GooiEnVechtstreek := Export_PerPlanRegio_GooiEnVechtstreek/result;
+			// parameter<string> Generate_PerPlanRegio_Hengelo           := Export_PerPlanRegio_Hengelo/result;
+			
+			Unit<uint32>  PerPlanRegio := PlanRegio, using = "FolderInfo"
+			{
+				attribute<String>       BU_CODE                         (Planregio) := PlanRegio/BU_CODE;
+				attribute<String>       I01_buurtcode                   (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I01_buurtcode';
+				attribute<String>       I02_buurtnaam                   (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I02_buurtnaam';
+				attribute<String>       I03_wijkcode                    (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I03_wijkcode';
+				attribute<String>       I04_wijknaam                    (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I04_wijknaam';
+				attribute<String>       I05_gemeentecode                (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I05_gemeentecode';
+				attribute<String>       I06_gemeentenaam                (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I06_gemeentenaam';
+				attribute<String>       I07_energieregionaam            (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I07_energieregionaam';
+				attribute<String>       I08_provincienaam               (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I08_provincienaam';
+				attribute<nrAsl>        I09_aantal_woningen	            (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I09_aantal_woningen';
+				attribute<nrAsl>        I10_aantal_utiliteit            (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I10_aantal_utiliteit';
+				attribute<nrWoning>     I11_woningequivalenten          (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I11_woningequivalenten'; //130m2 utiliteit = 1 WEQ
+				attribute<string>       Uitgesloten                     (Planregio) := ='LeidraadResultaten/'+Last_Rekenstap+'/PlanregioResults/Statisch/table/I13_Uitgesloten';
+			
+				attribute<GJ_yr_WEQ>    H01_Vraag_elek_Totaal                (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H01_Vraag_totaal, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H02_Vraag_elek_Ruimteverwarming      (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H02_Vraag_RV, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H03_Vraag_elek_Tapwater              (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H03_Vraag_TW, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H04_Vraag_elek_Ventilatie            (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H04_Vraag_Vent, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H05_Vraag_elek_Koude                 (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H05_Vraag_K, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H06_Vraag_elek_Apparaten             (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H06_Vraag_App, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_ha>     H07_Vraag_elek_perhectare            (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H07_Vraag_tot_ha, 0[GJ_yr_ha])';
+				attribute<GJ_yr_WEQ>    H08_Input_Totaal                     (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H08_Input_Totaal, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H09_Input_Aardgas                    (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H09_Input_Aardgas, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H10_Input_Duurzaamgas                (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H10_Input_Duurzaamgas, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H11_Input_Elektriciteit              (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H11_Input_Elektriciteit, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H12_Input_MTwarmte                   (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H12_Input_MTwarmtebronnen, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H13_Input_LTwarmte                   (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H13_Input_LTwarmtebronnen, 0[GJ_yr_WEQ])';
+				attribute<GJ_yr_WEQ>    H14_Saldo_Omgevingswarmte            (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H14_Saldo_Omgevingswarmte, 0[GJ_yr_WEQ])';
+				attribute<ton_yr>       H15_CO2_uitstoot                     (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H15_CO2_uitstoot, 0[ton_yr])';
+				attribute<Eur_yr>       H16_Nat_meerkost                     (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H16_Nat_meerkost, 0[Eur_yr])';
+				attribute<Eur_ton>      H17_Nat_meerkost_CO2                 (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H17_Nat_meerkost_CO2, 0[Eur_ton])';
+				attribute<Eur_yr_WEQ>   H18_Nat_meerkost_WEQ                 (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H18_Nat_meerkost_WEQ, 0[Eur_yr_WEQ])';
+				attribute<Eur_m3>       H19_Waarde_hernieuwbaar_gas          (Planregio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Hoofdindicatoren/Table/H19_Waarde_hernieuwbaar_gas, 0[Eur_m3])';
+				
+				attribute<nrAsl>      A01_Aansl_aardgas       (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A01_Aansl_aardgas , 0[nrAsl])';
+				attribute<nrAsl>      A02_Aansl_eWP           (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A02_Aansl_eWP , 0[nrAsl])';
+				attribute<nrAsl>      A03_Aansl_MT            (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A03_Aansl_MT , 0[nrAsl])';
+				attribute<nrAsl>      A04_Aansl_LT            (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A04_Aansl_LT , 0[nrAsl])';
+				attribute<nrAsl>      A05_Aansl_hWP_HG        (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A05_Aansl_hWP_HG , 0[nrAsl])';
+				attribute<nrAsl>      A06_Aansl_HR_HG         (PlanRegio) := ='MakeDefined(LeidraadResultaten/'+Last_Rekenstap+'/PlanRegioResults/Aansluitingen/Table/A06_Aansl_HR_HG , 0[nrAsl])';
+				
+				attribute<nrAsl>      A10_Aansl_LT_WKO        (PlanRegio) := Extra_aansluitingen/A10_Aansl_LT_WKO;
+				attribute<nrAsl>      A11_Aansl_LT_LT15_30    (PlanRegio) := Extra_aansluitingen/A11_Aansl_LT_LT15_30;
+				attribute<nrAsl>      A12_Aansl_LT_LT15_50    (PlanRegio) := Extra_aansluitingen/A12_Aansl_LT_LT15_50;
+				attribute<nrAsl>      A13_Aansl_LT_LT15_70    (PlanRegio) := Extra_aansluitingen/A13_Aansl_LT_LT15_70;
+				attribute<nrAsl>      A14_Aansl_LT_LT30_30    (PlanRegio) := Extra_aansluitingen/A14_Aansl_LT_LT30_30;
+				attribute<nrAsl>      A15_Aansl_LT_LT30_50    (PlanRegio) := Extra_aansluitingen/A15_Aansl_LT_LT30_50;
+				attribute<nrAsl>      A16_Aansl_LT_LT30_70    (PlanRegio) := Extra_aansluitingen/A16_Aansl_LT_LT30_70;
+				attribute<nrAsl>      A17_Aansl_LT_TEO        (PlanRegio) := Extra_aansluitingen/A17_Aansl_LT_TEO;
+				attribute<nrAsl>      A18_Aansl_LT_BuurtWKO   (PlanRegio) := Extra_aansluitingen/A18_Aansl_LT_BuurtWKO;
+				attribute<nrAsl>      A19_Aansl_MT_Restwarmte (PlanRegio) := Extra_aansluitingen/A19_Aansl_MT_Restwarmte;
+				attribute<nrAsl>      A20_Aansl_MT_Geothermie (PlanRegio) := Extra_aansluitingen/A20_Aansl_MT_Geothermie;
+				attribute<nrAsl>      A21_Aansl_MT_WijkWKK    (PlanRegio) := Extra_aansluitingen/A21_Aansl_MT_WijkWKK;
+				attribute<nrAsl>      A22_Aansl_MT_BioWKK     (PlanRegio) := Extra_aansluitingen/A22_Aansl_MT_BioWKK;
+				attribute<nrAsl>      A23_Aansl_H2            (PlanRegio) := Extra_aansluitingen/A23_Aansl_H2;
+				
+			}
+			
+			container Extra_aansluitingen : using = "/LeidraadResultaten/ZichtJaar/PlanregioResults"
+			{
+				attribute<nrAsl> A10_Aansl_LT_WKO (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/WKO,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A11_Aansl_LT_LT15_30 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT15_30,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A12_Aansl_LT_LT15_50 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT15_50,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A13_Aansl_LT_LT15_70 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT15_70,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A14_Aansl_LT_LT30_30 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT30_30,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A15_Aansl_LT_LT30_50 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT30_50,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A16_Aansl_LT_LT30_70 (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/LT30_70,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A17_Aansl_LT_TEO (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/TEO,0[nrAsl]))[nrAsl];
+							
+				attribute<nrAsl> A18_Aansl_LT_BuurtWKO (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/BuurtWKO,0[nrAsl]))[nrAsl];
+			
+				attribute<nrAsl> A19_Aansl_MT_Restwarmte (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/Restwarmte + WarmteBestaand/nrAansl_w_MT + WarmteBestaand/nrAansl_u_MT ,0[nrAsl]))[nrAsl];
+								
+				attribute<nrAsl> A20_Aansl_MT_Geothermie (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/Geothermie,0[nrAsl]))[nrAsl];
+								
+				attribute<nrAsl> A21_Aansl_MT_WijkWKK (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/WijkWKK,0[nrAsl]))[nrAsl];
+			
+				attribute<nrAsl> A22_Aansl_MT_BioWKK (PlanRegio) :=
+					round(Statisch/IsUitgesloten
+							? 0[nrAsl]
+							: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/BioWKK,0[nrAsl]))[nrAsl];
+			
+				attribute<nrAsl> A23_Aansl_H2 (PlanRegio) :=
+					round((Statisch/IsUitgesloten || !GroenGas)
+								? 0[nrAsl]
+								: MakeDefined(R_AardG * StateNaAllocatie/nrAansluitinging/WaterstofHR,0[nrAsl]))[nrAsl];
+			}
+
+			unit<uint32> list_PerPlanRegio       := SubItem_PropValues(PerPlanRegio,'name');
+			
+			container export_PerPlanRegio        := model/CalculationSchemes/Rapportage/WriteTable32ToCSV_ESDL(PerPlanRegio, AsList(list_PerPlanRegio/name, ';') , FolderInfo/OutputFolder+'/PerPlanRegio_ESDL.csv');
+		}
+	}
+	
+	
+
+	
 	container StartJaar := CalculationSchemes/LeidraadResultaten('StartJaar')
 	{
 		container WarmteBestaand

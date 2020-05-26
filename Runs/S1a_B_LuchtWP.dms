@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 container S1a_B_LuchtWP
-{
+{ 
 	parameter<string> Variantcode := 's1a';
 	#include <%projDir%/model/Units.dms>
 	#include <%projDir%/model/Geography.dms>
@@ -34,10 +34,12 @@ container S1a_B_LuchtWP
 	
 	container Invoer := SharedInvoer, Using = "Units"
 	{
+		parameter<string> RES_StudieGebied : ['RESNoordHollandZuid']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
+		parameter<string> StudieGebied     := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied, Geography/RegioIndelingen/Energieregio/name)];
+		
 		// Include Invoer and defaults settings section, similar for each run
 		#include <%projDir%/model/RuimtelijkeData.dms>
 		#include <%projDir%/model/Kengetallen.dms>
-		
 		#include <%projDir%/model/EnergiePrijzen.dms>
 
 		container DefaultInstellingen
@@ -53,6 +55,14 @@ container S1a_B_LuchtWP
 		container SpecifiekeInstellingen := DefaultInstellingen/Leidraad
 		{
 			parameter<string> prijzenbron := '20200320_Energieprijzen_KEV2019', Descr = "Energieprijzen in het basispad van de Klimaat en Energie Verkenning 2019 (PBL)";
+			
+			unit<uint8> BsBase := Classifications/BebouwingsSectorBase;
+			attribute<bool> BS_isActive(BsBase) : [ true, true, false];
+			parameter<bool> BC_doNieuwbouw := TRUE;
+			
+			parameter<string> NieuwbouwInputTemplate  := 'EsdlNieuwbouw';
+			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
+			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
 			
 			container StartJaar := DefaultInstellingen/Basis;
 			
