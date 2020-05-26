@@ -61,8 +61,8 @@ container S2f_D_Geo_overal
 			parameter<bool> BC_doNieuwbouw := TRUE;
 			
 			parameter<string> NieuwbouwInputTemplate  := 'EsdlNieuwbouw';
-			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
-			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
+			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
+			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
 			
 			container StartJaar := DefaultInstellingen/Basis;
 			

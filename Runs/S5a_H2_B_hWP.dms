@@ -62,8 +62,8 @@ container S5a_H2_B_hWP
 			parameter<bool> BC_doNieuwbouw := TRUE;
 			
 			parameter<string> NieuwbouwInputTemplate  := 'EsdlNieuwbouw';
-			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
-			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
+			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
+			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
 			
 			container StartJaar := DefaultInstellingen/Basis;
 			

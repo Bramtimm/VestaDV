@@ -67,8 +67,8 @@ container Havenstad
 			attribute<bool> BS_isActive(BsBase) : [ true, true, false];
 			
 			parameter<string> NieuwbouwInputTemplate  := 'EsdlNieuwbouw';
-			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
-			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-tijdelijk.esdl';
+			parameter<string> NieuwbouwWoningEsdlPath := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
+			parameter<string> NieuwbouwUtilEsdlPath   := '%ProjDir%/ESDL/Havenstad-input-VESTA.esdl';
 
 			container StartJaar := DefaultInstellingen/Basis;
 			
