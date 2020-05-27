@@ -1,0 +1,12 @@
+
+05/27/20-11:58:07[  1]@@@@@ Logging started for C:/GeoDMS/ProjDir/VestaDV/log_vesta/5/02-115526_S1b_B_BodemWP_R2_2030_Hoofdindicatoren.txt at 05/27/20 - 11:58:07
+05/27/20-11:58:07[  1]Logging throwItemError 1: WindowsSystem Error: CreateFileHandleForRwView(C:/GeoDMS/LocalData/VestaDV/CalcCachex64.v7.217/LockFile.fss):
+ErrorCode 32: The process cannot access the file because it is being used by another process.
+
+05/27/20-11:58:07[  1]{ TreeItem::EnableAutoDeleteRootImpl
+05/27/20-11:58:07[  1]   START ResetAllKeepIterest(this)
+05/27/20-11:58:07[  1]   START SessionData::CloseDataStoreManager(this, sfwa)
+05/27/20-11:58:07[  1]   START SessionData::ReleaseIt(this)
+05/27/20-11:58:07[  1]   START sfwa.Commit()
+05/27/20-11:58:07[  1]} TreeItem::EnableAutoDeleteRootImpl (0.006 secs)
+05/27/20-11:58:07[  1]@@@@@ Logging ended for C:/GeoDMS/ProjDir/VestaDV/log_vesta/5/02-115526_S1b_B_BodemWP_R2_2030_Hoofdindicatoren.txt at 05/27/20 - 11:58:07

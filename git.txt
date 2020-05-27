@@ -1,20 +1,16 @@
-heads/GeneralisatieConversie
-On branch GeneralisatieConversie
-Your branch is up to date with 'origin/GeneralisatieConversie'.
-
+heads/MONDAINE
+On branch MONDAINE
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   Runs/S3f_D_LT30_70.dms
-	modified:   Runs/S3h_D_TEO.dms
-	modified:   Runs/SharedInvoer.dms
-	modified:   Runs/batch_leidraad_runs.bat
+	modified:   Runs/batch_leidraad_ESDL.bat
+	modified:   SubWCRevData.str
 	modified:   git.txt
-	modified:   model/stam/CalculationSchemes.dms
-	modified:   model/stam/CalculationSchemes/TussenResultaten/BebouwingsComponentT.dms
+	modified:   model/LeidraadResultaten.dms
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	Runs/DefaultSettings/Rekenstap_GroenGasN.dms
+	Runs/Referentie.dms
+	log_vesta/
 
 no changes added to commit (use "git add" and/or "git commit -a")
