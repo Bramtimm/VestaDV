@@ -37,6 +37,7 @@ set EXPORT_PATH="LeidraadResultaten/Exports/ESDL/export_PerPlanRegio/result"
 "%exe_path%" "%prj_dir%\Runs\S3e_B_TEO.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S3f_D_LT30_70.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S3g_D_BuurtWKO.dms" "%EXPORT_PATH%"
+"%exe_path%" "%prj_dir%\Runs\S3h_D_TEO.dms" "%EXPORT_PATH%"
 
 "%exe_path%" "%prj_dir%\Runs\S4a_GG_B_hWP.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S4b_GG_B_HR.dms" "%EXPORT_PATH%"
