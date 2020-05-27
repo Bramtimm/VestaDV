@@ -18,7 +18,13 @@ set SUBFILENAME=%CUR_YYYY%%CUR_MM%%CUR_DD%-%CUR_HH%%CUR_NN%%CUR_SS%
 
 set EXPORT_PATH=LeidraadResultaten/Exports/ESDL/Generate_PerPlanRegio_Havenstad
 
+"%exe_path%" "%prj_dir%\Runs\S0_Referentie.dms" "%EXPORT_PATH%"
 
+"%exe_path%" "%prj_dir%\Runs\S1a_B_LuchtWP.dms" "%EXPORT_PATH%"
+"%exe_path%" "%prj_dir%\Runs\S1b_B_BodemWP.dms" "%EXPORT_PATH%"
+
+"%exe_path%" "%prj_dir%\Runs\S2a_B_Restwarmte.dms" "%EXPORT_PATH%"
+"%exe_path%" "%prj_dir%\Runs\S2b_B_Geo_contour.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S2c_B_Geo_overal.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S2d_D_Restwarmte.dms" "%EXPORT_PATH%"
 "%exe_path%" "%prj_dir%\Runs\S2e_D_Geo_contour.dms" "%EXPORT_PATH%"
@@ -44,11 +50,3 @@ set EXPORT_PATH=LeidraadResultaten/Exports/ESDL/Generate_PerPlanRegio_Havenstad
 "%exe_path%" "%prj_dir%\Runs\S5d_H2_D_HR.dms" "%EXPORT_PATH%"
 
 pause Ready
-
-"%exe_path%" "%prj_dir%\Runs\S0_Referentie.dms" "%EXPORT_PATH%"
-
-"%exe_path%" "%prj_dir%\Runs\S1a_B_LuchtWP.dms" "%EXPORT_PATH%"
-"%exe_path%" "%prj_dir%\Runs\S1b_B_BodemWP.dms" "%EXPORT_PATH%"
-
-"%exe_path%" "%prj_dir%\Runs\S2a_B_Restwarmte.dms" "%EXPORT_PATH%"
-"%exe_path%" "%prj_dir%\Runs\S2b_B_Geo_contour.dms" "%EXPORT_PATH%"
