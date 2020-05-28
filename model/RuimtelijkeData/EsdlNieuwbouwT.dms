@@ -97,7 +97,7 @@ template EsdlNieuwbouw
 			rlookup(
 				replace_value(
 					UpperCase(asset/residentialBuildingType[nr_OrgEntity])
-				,	'APPARTEMENTENCOMPEX', 'APPARTEMENT'
+				,	'APPARTEMENTENCOMPLEX', 'APPARTEMENT'
 				)
 			,	UpperCase(Classifications/WoningtypeNieuwbouw/name)
 			);
@@ -123,12 +123,14 @@ template EsdlNieuwbouw
 		
 		attribute<Classifications/BebouwingsComponentBase> BebouwingsComponentBase_rel := const(Classifications/BebouwingsComponentBase/V/NieuwbouwWoning, .); // TODO ESDL: selecteer obv GebruiksDoel
 	
-		attribute<rdc_meter>  point_rd := LatLongWgs842RD(
+		attribute<rdc_meter>  point_rd_direct := LatLongWgs842RD(
 			point(
 				value(first(Geometry/lat, Geometry_Parent_rel), float64)
 			,	value(first(Geometry/lon, Geometry_Parent_rel), float64)
 			,	dpoint)
 		, rdc_meter);
+		
+		attribute<rdc_meter>  point_rd := MakeDefined(point_rd_direct, Gebouw/point_rd[Gebouw_rel]);
 		
 		attribute<m2   >      Oppervlakte:= value(floorArea, m2) * Gebouw/aggregationCount[Gebouw_rel];
 		attribute<nrAsl>      nr_aansl   := value(aggregationCount, nrAsl) * Gebouw/aggregationCount[Gebouw_rel];
@@ -200,12 +202,12 @@ template EsdlNieuwbouw
 			}
 			attribute<Classifications/AfgifteSysteem> AfgifteSysteem_rel := const(Classifications/AfgifteSysteem/V/geen, .);
 			attribute<uint32>                         AfnameGebied_rel   := const(0/0, .);
-			attribute<Classifications/GebouwOptie>    GebouwOptie_rel    := const(Classifications/GebouwOptie_rel/V/geen, .); // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
+//REMOVE			attribute<Classifications/GebouwOptie>    GebouwOptie_rel    := const(Classifications/GebouwOptie_rel/V/geen, .); // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
 			
 			
 			attribute<Geography/rdc_meter>                Point              := BouwObject/point_rd   [nr_OrgEntity];
 			attribute<Invoer/RuimtelijkeData/StudieGebied/buurt> buurt_rel   := point_in_polygon(point, Invoer/RuimtelijkeData/StudieGebied/buurt/geometry );
-			attribute<BebouwingsTypeDomein>               BebouwingsType     := rlookup(UpperCase(TypeName), UpperCase(BebouwingsTypeDomein/Name));
+			attribute<BebouwingsTypeDomein>               BebouwingsType     := Gebouw/WoningType[BouwObject/Gebouw_rel[nr_OrgEntity]];
 			attribute<Classifications/BouwJaar>           Bouwjaar           := classify(10000i-int32(Gebouw/Bouwjaar[BouwObject/Gebouw_rel[nr_OrgEntity]]), 10000i-int32(Classifications/BouwJaar/ClassBreak));
 			attribute<ModelObjectKeyDomein>               ModelObjectKey     := combine_data(ModelObjectKeyDomein, BebouwingsType, BouwJaar);
 
