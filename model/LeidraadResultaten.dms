@@ -6,14 +6,14 @@
 
 container LeidraadResultaten: using = "Model"
 {   
-	container Exports: isHidden = "True"
+	container Exports
 	{
 		unit<uint32> PlanRegio           := Invoer/SpecifiekeInstellingen/PlanRegio;
 		unit<uint32> BestaandeWoningen   := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeWoning;
 		unit<uint32> BestaandeUtil       := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeUtil;
 		unit<uint32> BebouwingsObject    := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeWoning;
 		
-		container FolderInfo: isHidden = "True"
+		container FolderInfo
 		{
 			// parameter<string> RunName        := Expand(., '%configName%');
 			// parameter<string> Last_Rekenstap := 'ZichtJaar';
