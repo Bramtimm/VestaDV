@@ -15,12 +15,12 @@ container LeidraadResultaten: using = "Model"
 		
 		container FolderInfo
 		{
-			// parameter<string> RunName        := Expand(., '%configName%');
-			// parameter<string> Last_Rekenstap := 'ZichtJaar';
+			parameter<string> RunName        := Expand(., '%configName%');
+			parameter<string> Last_Rekenstap := 'ZichtJaar';
 			// parameter<string> Last_Rekenstap := last(/rekenstap/name);
 			
-			parameter<string> Last_Rekenstap := 'StartJaar';
-			parameter<string> RunName        := 'StartJaar';
+			// parameter<string> Last_Rekenstap := 'StartJaar';
+			// parameter<string> RunName        := 'StartJaar';
 			
 			parameter<string> RegioNaam_GooiEnVechtstreek    := 'GooiEnVechtstreek';
 			parameter<string> RegioNaam_Hengelo              := 'Hengelo';
