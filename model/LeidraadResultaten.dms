@@ -24,7 +24,8 @@ container LeidraadResultaten: using = "Model"
 			
 			parameter<string> RegioNaam_GooiEnVechtstreek    := 'GooiEnVechtstreek';
 			parameter<string> RegioNaam_Hengelo              := 'Hengelo';
-			parameter<string> OutputFolder                   := '%localDataProjDir%/Results/RES_NHZ/'+RunName;
+			parameter<string> RegioNaam_Havenstad            := 'Havenstad';
+			parameter<string> OutputFolder_Havenstad         := '%localDataProjDir%/Results/'+RegioNaam_Havenstad+'/'+RunName;
 			parameter<string> OutputFolder_GooiEnVechtstreek := '%localDataProjDir%/Results/'+RegioNaam_GooiEnVechtstreek+'/'+RunName;
 			parameter<string> OutputFolder_Hengelo           := '%localDataProjDir%/Results/'+RegioNaam_Hengelo+'/'+RunName;
 			
@@ -35,11 +36,11 @@ container LeidraadResultaten: using = "Model"
 
 		container ESDL
 		{
-			// parameter<string> Generate_PerPlanRegio := Generate_PerPlanRegio_GooiEnVechtstreek + Generate_PerPlanRegio_Hengelo;
+			parameter<string> Generate_PerPlanRegio := Generate_PerPlanRegio_GooiEnVechtstreek + Generate_PerPlanRegio_Hengelo + Generate_PerPlanRegio_Havenstad;
 
-			// parameter<string> Generate_PerPlanRegio_GooiEnVechtstreek := Export_PerPlanRegio_GooiEnVechtstreek/result;
-			// parameter<string> Generate_PerPlanRegio_Hengelo           := Export_PerPlanRegio_Hengelo/result;
-			parameter<string> Generate_PerPlanRegio_Havenstad           := export_PerPlanRegio_Havenstad/result;
+			parameter<string> Generate_PerPlanRegio_GooiEnVechtstreek   := PerStudyArea/GooiEnVechtstreek/export_PerPlanRegio/result;
+			parameter<string> Generate_PerPlanRegio_Hengelo             := PerStudyArea/Hengelo/export_PerPlanRegio/result;
+			parameter<string> Generate_PerPlanRegio_Havenstad           := PerStudyArea/Havenstad/export_PerPlanRegio/result;
 			
 			container PerBebouwingsSector := 
 				for_each_ne(
@@ -124,125 +125,161 @@ container LeidraadResultaten: using = "Model"
 			{
 				attribute<string> values := ReadArray(trim(FolderInfo/StudieGebied_Havenstad), ., String, 0);
 			}
-			
-			unit<uint32> Regio_selectie_Havenstad := ='subset('+AsList('PlanRegio/BU_CODE == ' +quote(selected_Havenstad/values), ' || ')+')'
+			unit<uint32> selected_GooiEnVechtstreek := range(uint32, 0, strcount(FolderInfo/StudieGebied_GooiEnVechtstreek, ',') + 1 )
 			{
-				attribute<String>       BU_CODE                     := PerBebouwingsSector/Woning/PerPlanRegio/BU_CODE[nr_OrgEntity];
-				attribute<String>       I01_buurtcode               := PerBebouwingsSector/Woning/PerPlanRegio/I01_buurtcode[nr_OrgEntity];
-				attribute<String>       I02_buurtnaam               := PerBebouwingsSector/Woning/PerPlanRegio/I02_buurtnaam[nr_OrgEntity];
-				attribute<String>       I03_wijkcode                := PerBebouwingsSector/Woning/PerPlanRegio/I03_wijkcode[nr_OrgEntity];
-				attribute<String>       I04_wijknaam                := PerBebouwingsSector/Woning/PerPlanRegio/I04_wijknaam[nr_OrgEntity];
-				attribute<String>       I05_gemeentecode            := PerBebouwingsSector/Woning/PerPlanRegio/I05_gemeentecode[nr_OrgEntity];
-				attribute<String>       I06_gemeentenaam            := PerBebouwingsSector/Woning/PerPlanRegio/I06_gemeentenaam[nr_OrgEntity];
-				attribute<String>       I07_energieregionaam        := PerBebouwingsSector/Woning/PerPlanRegio/I07_energieregionaam[nr_OrgEntity];
-				attribute<String>       I08_provincienaam           := PerBebouwingsSector/Woning/PerPlanRegio/I08_provincienaam[nr_OrgEntity];
-				attribute<nrAsl>        I09_aantal_woningen	        := PerBebouwingsSector/Woning/PerPlanRegio/I09_aantal_woningen[nr_OrgEntity];
-				attribute<nrAsl>        I10_aantal_utiliteit        := PerBebouwingsSector/Woning/PerPlanRegio/I10_aantal_utiliteit[nr_OrgEntity];
-				attribute<nrWoning>     I11_woningequivalenten      := PerBebouwingsSector/Woning/PerPlanRegio/I11_woningequivalenten[nr_OrgEntity];
-				attribute<string>       Uitgesloten                 := PerBebouwingsSector/Woning/PerPlanRegio/Uitgesloten[nr_OrgEntity];
-
-				attribute<GJ_yr_WEQ>    Woning_H01_Vraag_Totaal            := PerBebouwingsSector/Woning/PerPlanRegio/H01_Vraag_totaal[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H02_Vraag_Ruimteverwarming  := PerBebouwingsSector/Woning/PerPlanRegio/H02_Vraag_Ruimteverwarming[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H03_Vraag_Tapwater          := PerBebouwingsSector/Woning/PerPlanRegio/H03_Vraag_Tapwater[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H04_Vraag_Ventilatie        := PerBebouwingsSector/Woning/PerPlanRegio/H04_Vraag_Ventilatie[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H05_Vraag_Koude             := PerBebouwingsSector/Woning/PerPlanRegio/H05_Vraag_Koude[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H06_Vraag_Apparaten         := PerBebouwingsSector/Woning/PerPlanRegio/H06_Vraag_Apparaten[nr_OrgEntity];
-				attribute<GJ_yr_ha>     Woning_H07_Vraag_perhectare        := PerBebouwingsSector/Woning/PerPlanRegio/H07_Vraag_perhectare[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H08_Input_Totaal            := PerBebouwingsSector/Woning/PerPlanRegio/H08_Input_Totaal[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H09_Input_Aardgas           := PerBebouwingsSector/Woning/PerPlanRegio/H09_Input_Aardgas[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H10_Input_Duurzaamgas       := PerBebouwingsSector/Woning/PerPlanRegio/H10_Input_Duurzaamgas[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H11_Input_Elektriciteit     := PerBebouwingsSector/Woning/PerPlanRegio/H11_Input_Elektriciteit[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H12_Input_MTwarmte          := PerBebouwingsSector/Woning/PerPlanRegio/H12_Input_MTwarmte[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H13_Input_LTwarmte          := PerBebouwingsSector/Woning/PerPlanRegio/H13_Input_LTwarmte[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Woning_H14_Saldo_Omgevingswarmte   := PerBebouwingsSector/Woning/PerPlanRegio/H14_Saldo_Omgevingswarmte[nr_OrgEntity];
-				attribute<ton_yr>       Woning_H15_CO2_uitstoot            := PerBebouwingsSector/Woning/PerPlanRegio/H15_CO2_uitstoot[nr_OrgEntity];
-				attribute<Eur_yr>       Woning_H16_Nat_meerkost            := PerBebouwingsSector/Woning/PerPlanRegio/H16_Nat_meerkost[nr_OrgEntity];
-				attribute<Eur_ton>      Woning_H17_Nat_meerkost_CO2        := PerBebouwingsSector/Woning/PerPlanRegio/H17_Nat_meerkost_CO2[nr_OrgEntity];
-				attribute<Eur_yr_WEQ>   Woning_H18_Nat_meerkost_WEQ        := PerBebouwingsSector/Woning/PerPlanRegio/H18_Nat_meerkost_WEQ[nr_OrgEntity];
-				attribute<Eur_m3>       Woning_H19_Waarde_hernieuwbaar_gas := PerBebouwingsSector/Woning/PerPlanRegio/H19_Waarde_hernieuwbaar_gas[nr_OrgEntity];
-				
-				attribute<nrAsl>        Woning_A01_Aansl_aardgas           := PerBebouwingsSector/Woning/PerPlanRegio/A01_Aansl_aardgas[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A02_Aansl_eWP               := PerBebouwingsSector/Woning/PerPlanRegio/A02_Aansl_eWP[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A03_Aansl_MT                := PerBebouwingsSector/Woning/PerPlanRegio/A03_Aansl_MT[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A04_Aansl_LT                := PerBebouwingsSector/Woning/PerPlanRegio/A04_Aansl_LT[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A05_Aansl_hWP_HG            := PerBebouwingsSector/Woning/PerPlanRegio/A05_Aansl_hWP_HG[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A06_Aansl_HR_HG             := PerBebouwingsSector/Woning/PerPlanRegio/A06_Aansl_HR_HG[nr_OrgEntity];
-		
-				attribute<nrAsl>        Woning_A10_Aansl_LT_WKO            := PerBebouwingsSector/Woning/PerPlanRegio/A10_Aansl_LT_WKO[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A11_Aansl_LT_LT15_30        := PerBebouwingsSector/Woning/PerPlanRegio/A11_Aansl_LT_LT15_30[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A12_Aansl_LT_LT15_50        := PerBebouwingsSector/Woning/PerPlanRegio/A12_Aansl_LT_LT15_50[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A13_Aansl_LT_LT15_70        := PerBebouwingsSector/Woning/PerPlanRegio/A13_Aansl_LT_LT15_70[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A14_Aansl_LT_LT30_30        := PerBebouwingsSector/Woning/PerPlanRegio/A14_Aansl_LT_LT30_30[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A15_Aansl_LT_LT30_50        := PerBebouwingsSector/Woning/PerPlanRegio/A15_Aansl_LT_LT30_50[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A16_Aansl_LT_LT30_70        := PerBebouwingsSector/Woning/PerPlanRegio/A16_Aansl_LT_LT30_70[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A17_Aansl_LT_TEO            := PerBebouwingsSector/Woning/PerPlanRegio/A17_Aansl_LT_TEO[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A18_Aansl_LT_BuurtWKO       := PerBebouwingsSector/Woning/PerPlanRegio/A18_Aansl_LT_BuurtWKO[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A19_Aansl_MT_Restwarmte     := PerBebouwingsSector/Woning/PerPlanRegio/A19_Aansl_MT_Restwarmte[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A20_Aansl_MT_Geothermie     := PerBebouwingsSector/Woning/PerPlanRegio/A20_Aansl_MT_Geothermie[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A21_Aansl_MT_WijkWKK        := PerBebouwingsSector/Woning/PerPlanRegio/A21_Aansl_MT_WijkWKK[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A22_Aansl_MT_BioWKK         := PerBebouwingsSector/Woning/PerPlanRegio/A22_Aansl_MT_BioWKK[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A23_Aansl_H2                := PerBebouwingsSector/Woning/PerPlanRegio/A23_Aansl_H2[nr_OrgEntity];
-				
-				attribute<nrAsl>        Woning_A30_Aansl_LabelA            := PerBebouwingsSector/Woning/PerPlanRegio/A30_Aansl_LabelA[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A31_Aansl_LabelB            := PerBebouwingsSector/Woning/PerPlanRegio/A31_Aansl_LabelB[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A32_Aansl_LabelC            := PerBebouwingsSector/Woning/PerPlanRegio/A32_Aansl_LabelC[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A33_Aansl_LabelD            := PerBebouwingsSector/Woning/PerPlanRegio/A33_Aansl_LabelD[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A34_Aansl_LabelE            := PerBebouwingsSector/Woning/PerPlanRegio/A34_Aansl_LabelE[nr_OrgEntity];
-				attribute<nrAsl>        Woning_A35_Aansl_LabelF            := PerBebouwingsSector/Woning/PerPlanRegio/A35_Aansl_LabelF[nr_OrgEntity];
-				
-				attribute<GJ_yr_WEQ>    Util_H01_Vraag_Totaal            := PerBebouwingsSector/Util/PerPlanRegio/H01_Vraag_Totaal[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H02_Vraag_Ruimteverwarming  := PerBebouwingsSector/Util/PerPlanRegio/H02_Vraag_Ruimteverwarming[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H03_Vraag_Tapwater          := PerBebouwingsSector/Util/PerPlanRegio/H03_Vraag_Tapwater[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H04_Vraag_Ventilatie        := PerBebouwingsSector/Util/PerPlanRegio/H04_Vraag_Ventilatie[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H05_Vraag_Koude             := PerBebouwingsSector/Util/PerPlanRegio/H05_Vraag_Koude[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H06_Vraag_Apparaten         := PerBebouwingsSector/Util/PerPlanRegio/H06_Vraag_Apparaten[nr_OrgEntity];
-				attribute<GJ_yr_ha>     Util_H07_Vraag_perhectare        := PerBebouwingsSector/Util/PerPlanRegio/H07_Vraag_perhectare[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H08_Input_Totaal            := PerBebouwingsSector/Util/PerPlanRegio/H08_Input_Totaal[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H09_Input_Aardgas           := PerBebouwingsSector/Util/PerPlanRegio/H09_Input_Aardgas[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H10_Input_Duurzaamgas       := PerBebouwingsSector/Util/PerPlanRegio/H10_Input_Duurzaamgas[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H11_Input_Elektriciteit     := PerBebouwingsSector/Util/PerPlanRegio/H11_Input_Elektriciteit[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H12_Input_MTwarmte          := PerBebouwingsSector/Util/PerPlanRegio/H12_Input_MTwarmte[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H13_Input_LTwarmte          := PerBebouwingsSector/Util/PerPlanRegio/H13_Input_LTwarmte[nr_OrgEntity];
-				attribute<GJ_yr_WEQ>    Util_H14_Saldo_Omgevingswarmte   := PerBebouwingsSector/Util/PerPlanRegio/H14_Saldo_Omgevingswarmte[nr_OrgEntity];
-				attribute<ton_yr>       Util_H15_CO2_uitstoot            := PerBebouwingsSector/Util/PerPlanRegio/H15_CO2_uitstoot[nr_OrgEntity];
-				attribute<Eur_yr>       Util_H16_Nat_meerkost            := PerBebouwingsSector/Util/PerPlanRegio/H16_Nat_meerkost[nr_OrgEntity];
-				attribute<Eur_ton>      Util_H17_Nat_meerkost_CO2        := PerBebouwingsSector/Util/PerPlanRegio/H17_Nat_meerkost_CO2[nr_OrgEntity];
-				attribute<Eur_yr_WEQ>   Util_H18_Nat_meerkost_WEQ        := PerBebouwingsSector/Util/PerPlanRegio/H18_Nat_meerkost_WEQ[nr_OrgEntity];
-				attribute<Eur_m3>       Util_H19_Waarde_hernieuwbaar_gas := PerBebouwingsSector/Util/PerPlanRegio/H19_Waarde_hernieuwbaar_gas[nr_OrgEntity];
-				
-				attribute<nrAsl>        Util_A01_Aansl_aardgas           := PerBebouwingsSector/Util/PerPlanRegio/A01_Aansl_aardgas[nr_OrgEntity];
-				attribute<nrAsl>        Util_A02_Aansl_eWP               := PerBebouwingsSector/Util/PerPlanRegio/A02_Aansl_eWP[nr_OrgEntity];
-				attribute<nrAsl>        Util_A03_Aansl_MT                := PerBebouwingsSector/Util/PerPlanRegio/A03_Aansl_MT[nr_OrgEntity];
-				attribute<nrAsl>        Util_A04_Aansl_LT                := PerBebouwingsSector/Util/PerPlanRegio/A04_Aansl_LT[nr_OrgEntity];
-				attribute<nrAsl>        Util_A05_Aansl_hWP_HG            := PerBebouwingsSector/Util/PerPlanRegio/A05_Aansl_hWP_HG[nr_OrgEntity];
-				attribute<nrAsl>        Util_A06_Aansl_HR_HG             := PerBebouwingsSector/Util/PerPlanRegio/A06_Aansl_HR_HG[nr_OrgEntity];
-		
-				attribute<nrAsl>        Util_A10_Aansl_LT_WKO            := PerBebouwingsSector/Util/PerPlanRegio/A10_Aansl_LT_WKO[nr_OrgEntity];
-				attribute<nrAsl>        Util_A11_Aansl_LT_LT15_30        := PerBebouwingsSector/Util/PerPlanRegio/A11_Aansl_LT_LT15_30[nr_OrgEntity];
-				attribute<nrAsl>        Util_A12_Aansl_LT_LT15_50        := PerBebouwingsSector/Util/PerPlanRegio/A12_Aansl_LT_LT15_50[nr_OrgEntity];
-				attribute<nrAsl>        Util_A13_Aansl_LT_LT15_70        := PerBebouwingsSector/Util/PerPlanRegio/A13_Aansl_LT_LT15_70[nr_OrgEntity];
-				attribute<nrAsl>        Util_A14_Aansl_LT_LT30_30        := PerBebouwingsSector/Util/PerPlanRegio/A14_Aansl_LT_LT30_30[nr_OrgEntity];
-				attribute<nrAsl>        Util_A15_Aansl_LT_LT30_50        := PerBebouwingsSector/Util/PerPlanRegio/A15_Aansl_LT_LT30_50[nr_OrgEntity];
-				attribute<nrAsl>        Util_A16_Aansl_LT_LT30_70        := PerBebouwingsSector/Util/PerPlanRegio/A16_Aansl_LT_LT30_70[nr_OrgEntity];
-				attribute<nrAsl>        Util_A17_Aansl_LT_TEO            := PerBebouwingsSector/Util/PerPlanRegio/A17_Aansl_LT_TEO[nr_OrgEntity];
-				attribute<nrAsl>        Util_A18_Aansl_LT_BuurtWKO       := PerBebouwingsSector/Util/PerPlanRegio/A18_Aansl_LT_BuurtWKO[nr_OrgEntity];
-				attribute<nrAsl>        Util_A19_Aansl_MT_Restwarmte     := PerBebouwingsSector/Util/PerPlanRegio/A19_Aansl_MT_Restwarmte[nr_OrgEntity];
-				attribute<nrAsl>        Util_A20_Aansl_MT_Geothermie     := PerBebouwingsSector/Util/PerPlanRegio/A20_Aansl_MT_Geothermie[nr_OrgEntity];
-				attribute<nrAsl>        Util_A21_Aansl_MT_WijkWKK        := PerBebouwingsSector/Util/PerPlanRegio/A21_Aansl_MT_WijkWKK[nr_OrgEntity];
-				attribute<nrAsl>        Util_A22_Aansl_MT_BioWKK         := PerBebouwingsSector/Util/PerPlanRegio/A22_Aansl_MT_BioWKK[nr_OrgEntity];
-				attribute<nrAsl>        Util_A23_Aansl_H2                := PerBebouwingsSector/Util/PerPlanRegio/A23_Aansl_H2[nr_OrgEntity];
-				
-				// attribute<nrAsl>        Util_A30_Aansl_LabelA            := PerBebouwingsSector/Util/PerPlanRegio/A30_Aansl_LabelA[nr_OrgEntity];
-				// attribute<nrAsl>        Util_A31_Aansl_LabelB            := PerBebouwingsSector/Util/PerPlanRegio/A31_Aansl_LabelB[nr_OrgEntity];
-				// attribute<nrAsl>        Util_A32_Aansl_LabelC            := PerBebouwingsSector/Util/PerPlanRegio/A32_Aansl_LabelC[nr_OrgEntity];
-				// attribute<nrAsl>        Util_A33_Aansl_LabelD            := PerBebouwingsSector/Util/PerPlanRegio/A33_Aansl_LabelD[nr_OrgEntity];
-				// attribute<nrAsl>        Util_A34_Aansl_LabelE            := PerBebouwingsSector/Util/PerPlanRegio/A34_Aansl_LabelE[nr_OrgEntity];
-				// attribute<nrAsl>        Util_A35_Aansl_LabelF            := PerBebouwingsSector/Util/PerPlanRegio/A35_Aansl_LabelF[nr_OrgEntity];
+				attribute<string> values := ReadArray(trim(FolderInfo/StudieGebied_GooiEnVechtstreek), ., String, 0);
+			}
+			unit<uint32> selected_Hengelo := range(uint32, 0, strcount(FolderInfo/StudieGebied_Hengelo, ',') + 1 )
+			{
+				attribute<string> values := ReadArray(trim(FolderInfo/StudieGebied_Hengelo), ., String, 0);
 			}
 			
-			unit<uint32> list_PerPlanRegio          := SubItem_PropValues(Regio_selectie_Havenstad,'name');
+			unit<uint8> StudyAreas : nrofrows = 3
+			{
+				attribute<string> name        : ['Havenstad','GooiEnVechtstreek','Hengelo'];
+				attribute<string> selectiepad : ['selected_Havenstad','selected_GooiEnVechtstreek','selected_Hengelo'];
+			}
 			
-			container export_PerPlanRegio_Havenstad := model/CalculationSchemes/Rapportage/WriteTable32ToCSV_ESDL(Regio_selectie_Havenstad, AsList(list_PerPlanRegio/name, ';') , FolderInfo/OutputFolder+'/PerPlanRegio_ESDL.csv');
+			container PerStudyArea :=
+				for_each_ne(
+					StudyAreas/name
+					, 'CreateOutputPerStudyArea_T('+quote(StudyAreas/name)+','+quote(StudyAreas/selectiepad)+')'
+				);
+			
+			Template CreateOutputPerStudyArea_T
+			{
+				parameter<string> regio_naam;
+				parameter<string> selected_list;
+				
+				unit<uint32> selected := =selected_list;
+				
+				parameter<string> RegioSelectie_Buurt_str      := 'subset('+AsList('PlanRegio/BU_CODE == ' +quote(selected/values), ' || ')+')';
+				parameter<string> RegioSelectie_Gemeente_str   := 'subset('+AsList('PlanRegio/GM_CODE == ' +quote(selected/values), ' || ')+')';
+				
+				parameter<string> RegioSelectie_str            := regio_naam == 'Havenstad'
+																	? RegioSelectie_Buurt_str
+																	: RegioSelectie_Gemeente_str;
+				
+				parameter<string> OutputFolder_str := ='FolderInfo/OutputFolder_'+regio_naam;
+				
+				unit<uint32> list_PerPlanRegio          := SubItem_PropValues(Regio_selectie,'name');
+				container export_PerPlanRegio           := model/CalculationSchemes/Rapportage/WriteTable32ToCSV_ESDL(Regio_selectie, AsList(list_PerPlanRegio/name, ';') , OutputFolder_str+'/PerPlanRegio_ESDL.csv');
+				
+				unit<uint32> Regio_selectie := =RegioSelectie_str
+				{
+					attribute<String>       BU_CODE                     := PerBebouwingsSector/Woning/PerPlanRegio/BU_CODE[nr_OrgEntity];
+					attribute<String>       I01_buurtcode               := PerBebouwingsSector/Woning/PerPlanRegio/I01_buurtcode[nr_OrgEntity];
+					attribute<String>       I02_buurtnaam               := PerBebouwingsSector/Woning/PerPlanRegio/I02_buurtnaam[nr_OrgEntity];
+					attribute<String>       I03_wijkcode                := PerBebouwingsSector/Woning/PerPlanRegio/I03_wijkcode[nr_OrgEntity];
+					attribute<String>       I04_wijknaam                := PerBebouwingsSector/Woning/PerPlanRegio/I04_wijknaam[nr_OrgEntity];
+					attribute<String>       I05_gemeentecode            := PerBebouwingsSector/Woning/PerPlanRegio/I05_gemeentecode[nr_OrgEntity];
+					attribute<String>       I06_gemeentenaam            := PerBebouwingsSector/Woning/PerPlanRegio/I06_gemeentenaam[nr_OrgEntity];
+					attribute<String>       I07_energieregionaam        := PerBebouwingsSector/Woning/PerPlanRegio/I07_energieregionaam[nr_OrgEntity];
+					attribute<String>       I08_provincienaam           := PerBebouwingsSector/Woning/PerPlanRegio/I08_provincienaam[nr_OrgEntity];
+					attribute<nrAsl>        I09_aantal_woningen	        := PerBebouwingsSector/Woning/PerPlanRegio/I09_aantal_woningen[nr_OrgEntity];
+					attribute<nrAsl>        I10_aantal_utiliteit        := PerBebouwingsSector/Woning/PerPlanRegio/I10_aantal_utiliteit[nr_OrgEntity];
+					attribute<nrWoning>     I11_woningequivalenten      := PerBebouwingsSector/Woning/PerPlanRegio/I11_woningequivalenten[nr_OrgEntity];
+					attribute<string>       Uitgesloten                 := PerBebouwingsSector/Woning/PerPlanRegio/Uitgesloten[nr_OrgEntity];
+
+					attribute<GJ_yr_WEQ>    Woning_H01_Vraag_Totaal            := PerBebouwingsSector/Woning/PerPlanRegio/H01_Vraag_totaal[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H02_Vraag_Ruimteverwarming  := PerBebouwingsSector/Woning/PerPlanRegio/H02_Vraag_Ruimteverwarming[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H03_Vraag_Tapwater          := PerBebouwingsSector/Woning/PerPlanRegio/H03_Vraag_Tapwater[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H04_Vraag_Ventilatie        := PerBebouwingsSector/Woning/PerPlanRegio/H04_Vraag_Ventilatie[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H05_Vraag_Koude             := PerBebouwingsSector/Woning/PerPlanRegio/H05_Vraag_Koude[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H06_Vraag_Apparaten         := PerBebouwingsSector/Woning/PerPlanRegio/H06_Vraag_Apparaten[nr_OrgEntity];
+					attribute<GJ_yr_ha>     Woning_H07_Vraag_perhectare        := PerBebouwingsSector/Woning/PerPlanRegio/H07_Vraag_perhectare[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H08_Input_Totaal            := PerBebouwingsSector/Woning/PerPlanRegio/H08_Input_Totaal[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H09_Input_Aardgas           := PerBebouwingsSector/Woning/PerPlanRegio/H09_Input_Aardgas[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H10_Input_Duurzaamgas       := PerBebouwingsSector/Woning/PerPlanRegio/H10_Input_Duurzaamgas[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H11_Input_Elektriciteit     := PerBebouwingsSector/Woning/PerPlanRegio/H11_Input_Elektriciteit[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H12_Input_MTwarmte          := PerBebouwingsSector/Woning/PerPlanRegio/H12_Input_MTwarmte[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H13_Input_LTwarmte          := PerBebouwingsSector/Woning/PerPlanRegio/H13_Input_LTwarmte[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Woning_H14_Saldo_Omgevingswarmte   := PerBebouwingsSector/Woning/PerPlanRegio/H14_Saldo_Omgevingswarmte[nr_OrgEntity];
+					attribute<ton_yr>       Woning_H15_CO2_uitstoot            := PerBebouwingsSector/Woning/PerPlanRegio/H15_CO2_uitstoot[nr_OrgEntity];
+					attribute<Eur_yr>       Woning_H16_Nat_meerkost            := PerBebouwingsSector/Woning/PerPlanRegio/H16_Nat_meerkost[nr_OrgEntity];
+					attribute<Eur_ton>      Woning_H17_Nat_meerkost_CO2        := PerBebouwingsSector/Woning/PerPlanRegio/H17_Nat_meerkost_CO2[nr_OrgEntity];
+					attribute<Eur_yr_WEQ>   Woning_H18_Nat_meerkost_WEQ        := PerBebouwingsSector/Woning/PerPlanRegio/H18_Nat_meerkost_WEQ[nr_OrgEntity];
+					attribute<Eur_m3>       Woning_H19_Waarde_hernieuwbaar_gas := PerBebouwingsSector/Woning/PerPlanRegio/H19_Waarde_hernieuwbaar_gas[nr_OrgEntity];
+					
+					attribute<nrAsl>        Woning_A01_Aansl_aardgas           := PerBebouwingsSector/Woning/PerPlanRegio/A01_Aansl_aardgas[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A02_Aansl_eWP               := PerBebouwingsSector/Woning/PerPlanRegio/A02_Aansl_eWP[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A03_Aansl_MT                := PerBebouwingsSector/Woning/PerPlanRegio/A03_Aansl_MT[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A04_Aansl_LT                := PerBebouwingsSector/Woning/PerPlanRegio/A04_Aansl_LT[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A05_Aansl_hWP_HG            := PerBebouwingsSector/Woning/PerPlanRegio/A05_Aansl_hWP_HG[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A06_Aansl_HR_HG             := PerBebouwingsSector/Woning/PerPlanRegio/A06_Aansl_HR_HG[nr_OrgEntity];
+			
+					attribute<nrAsl>        Woning_A10_Aansl_LT_WKO            := PerBebouwingsSector/Woning/PerPlanRegio/A10_Aansl_LT_WKO[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A11_Aansl_LT_LT15_30        := PerBebouwingsSector/Woning/PerPlanRegio/A11_Aansl_LT_LT15_30[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A12_Aansl_LT_LT15_50        := PerBebouwingsSector/Woning/PerPlanRegio/A12_Aansl_LT_LT15_50[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A13_Aansl_LT_LT15_70        := PerBebouwingsSector/Woning/PerPlanRegio/A13_Aansl_LT_LT15_70[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A14_Aansl_LT_LT30_30        := PerBebouwingsSector/Woning/PerPlanRegio/A14_Aansl_LT_LT30_30[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A15_Aansl_LT_LT30_50        := PerBebouwingsSector/Woning/PerPlanRegio/A15_Aansl_LT_LT30_50[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A16_Aansl_LT_LT30_70        := PerBebouwingsSector/Woning/PerPlanRegio/A16_Aansl_LT_LT30_70[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A17_Aansl_LT_TEO            := PerBebouwingsSector/Woning/PerPlanRegio/A17_Aansl_LT_TEO[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A18_Aansl_LT_BuurtWKO       := PerBebouwingsSector/Woning/PerPlanRegio/A18_Aansl_LT_BuurtWKO[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A19_Aansl_MT_Restwarmte     := PerBebouwingsSector/Woning/PerPlanRegio/A19_Aansl_MT_Restwarmte[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A20_Aansl_MT_Geothermie     := PerBebouwingsSector/Woning/PerPlanRegio/A20_Aansl_MT_Geothermie[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A21_Aansl_MT_WijkWKK        := PerBebouwingsSector/Woning/PerPlanRegio/A21_Aansl_MT_WijkWKK[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A22_Aansl_MT_BioWKK         := PerBebouwingsSector/Woning/PerPlanRegio/A22_Aansl_MT_BioWKK[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A23_Aansl_H2                := PerBebouwingsSector/Woning/PerPlanRegio/A23_Aansl_H2[nr_OrgEntity];
+					
+					attribute<nrAsl>        Woning_A30_Aansl_LabelA            := PerBebouwingsSector/Woning/PerPlanRegio/A30_Aansl_LabelA[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A31_Aansl_LabelB            := PerBebouwingsSector/Woning/PerPlanRegio/A31_Aansl_LabelB[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A32_Aansl_LabelC            := PerBebouwingsSector/Woning/PerPlanRegio/A32_Aansl_LabelC[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A33_Aansl_LabelD            := PerBebouwingsSector/Woning/PerPlanRegio/A33_Aansl_LabelD[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A34_Aansl_LabelE            := PerBebouwingsSector/Woning/PerPlanRegio/A34_Aansl_LabelE[nr_OrgEntity];
+					attribute<nrAsl>        Woning_A35_Aansl_LabelF            := PerBebouwingsSector/Woning/PerPlanRegio/A35_Aansl_LabelF[nr_OrgEntity];
+					
+					attribute<GJ_yr_WEQ>    Util_H01_Vraag_Totaal            := PerBebouwingsSector/Util/PerPlanRegio/H01_Vraag_Totaal[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H02_Vraag_Ruimteverwarming  := PerBebouwingsSector/Util/PerPlanRegio/H02_Vraag_Ruimteverwarming[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H03_Vraag_Tapwater          := PerBebouwingsSector/Util/PerPlanRegio/H03_Vraag_Tapwater[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H04_Vraag_Ventilatie        := PerBebouwingsSector/Util/PerPlanRegio/H04_Vraag_Ventilatie[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H05_Vraag_Koude             := PerBebouwingsSector/Util/PerPlanRegio/H05_Vraag_Koude[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H06_Vraag_Apparaten         := PerBebouwingsSector/Util/PerPlanRegio/H06_Vraag_Apparaten[nr_OrgEntity];
+					attribute<GJ_yr_ha>     Util_H07_Vraag_perhectare        := PerBebouwingsSector/Util/PerPlanRegio/H07_Vraag_perhectare[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H08_Input_Totaal            := PerBebouwingsSector/Util/PerPlanRegio/H08_Input_Totaal[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H09_Input_Aardgas           := PerBebouwingsSector/Util/PerPlanRegio/H09_Input_Aardgas[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H10_Input_Duurzaamgas       := PerBebouwingsSector/Util/PerPlanRegio/H10_Input_Duurzaamgas[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H11_Input_Elektriciteit     := PerBebouwingsSector/Util/PerPlanRegio/H11_Input_Elektriciteit[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H12_Input_MTwarmte          := PerBebouwingsSector/Util/PerPlanRegio/H12_Input_MTwarmte[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H13_Input_LTwarmte          := PerBebouwingsSector/Util/PerPlanRegio/H13_Input_LTwarmte[nr_OrgEntity];
+					attribute<GJ_yr_WEQ>    Util_H14_Saldo_Omgevingswarmte   := PerBebouwingsSector/Util/PerPlanRegio/H14_Saldo_Omgevingswarmte[nr_OrgEntity];
+					attribute<ton_yr>       Util_H15_CO2_uitstoot            := PerBebouwingsSector/Util/PerPlanRegio/H15_CO2_uitstoot[nr_OrgEntity];
+					attribute<Eur_yr>       Util_H16_Nat_meerkost            := PerBebouwingsSector/Util/PerPlanRegio/H16_Nat_meerkost[nr_OrgEntity];
+					attribute<Eur_ton>      Util_H17_Nat_meerkost_CO2        := PerBebouwingsSector/Util/PerPlanRegio/H17_Nat_meerkost_CO2[nr_OrgEntity];
+					attribute<Eur_yr_WEQ>   Util_H18_Nat_meerkost_WEQ        := PerBebouwingsSector/Util/PerPlanRegio/H18_Nat_meerkost_WEQ[nr_OrgEntity];
+					attribute<Eur_m3>       Util_H19_Waarde_hernieuwbaar_gas := PerBebouwingsSector/Util/PerPlanRegio/H19_Waarde_hernieuwbaar_gas[nr_OrgEntity];
+					
+					attribute<nrAsl>        Util_A01_Aansl_aardgas           := PerBebouwingsSector/Util/PerPlanRegio/A01_Aansl_aardgas[nr_OrgEntity];
+					attribute<nrAsl>        Util_A02_Aansl_eWP               := PerBebouwingsSector/Util/PerPlanRegio/A02_Aansl_eWP[nr_OrgEntity];
+					attribute<nrAsl>        Util_A03_Aansl_MT                := PerBebouwingsSector/Util/PerPlanRegio/A03_Aansl_MT[nr_OrgEntity];
+					attribute<nrAsl>        Util_A04_Aansl_LT                := PerBebouwingsSector/Util/PerPlanRegio/A04_Aansl_LT[nr_OrgEntity];
+					attribute<nrAsl>        Util_A05_Aansl_hWP_HG            := PerBebouwingsSector/Util/PerPlanRegio/A05_Aansl_hWP_HG[nr_OrgEntity];
+					attribute<nrAsl>        Util_A06_Aansl_HR_HG             := PerBebouwingsSector/Util/PerPlanRegio/A06_Aansl_HR_HG[nr_OrgEntity];
+			
+					attribute<nrAsl>        Util_A10_Aansl_LT_WKO            := PerBebouwingsSector/Util/PerPlanRegio/A10_Aansl_LT_WKO[nr_OrgEntity];
+					attribute<nrAsl>        Util_A11_Aansl_LT_LT15_30        := PerBebouwingsSector/Util/PerPlanRegio/A11_Aansl_LT_LT15_30[nr_OrgEntity];
+					attribute<nrAsl>        Util_A12_Aansl_LT_LT15_50        := PerBebouwingsSector/Util/PerPlanRegio/A12_Aansl_LT_LT15_50[nr_OrgEntity];
+					attribute<nrAsl>        Util_A13_Aansl_LT_LT15_70        := PerBebouwingsSector/Util/PerPlanRegio/A13_Aansl_LT_LT15_70[nr_OrgEntity];
+					attribute<nrAsl>        Util_A14_Aansl_LT_LT30_30        := PerBebouwingsSector/Util/PerPlanRegio/A14_Aansl_LT_LT30_30[nr_OrgEntity];
+					attribute<nrAsl>        Util_A15_Aansl_LT_LT30_50        := PerBebouwingsSector/Util/PerPlanRegio/A15_Aansl_LT_LT30_50[nr_OrgEntity];
+					attribute<nrAsl>        Util_A16_Aansl_LT_LT30_70        := PerBebouwingsSector/Util/PerPlanRegio/A16_Aansl_LT_LT30_70[nr_OrgEntity];
+					attribute<nrAsl>        Util_A17_Aansl_LT_TEO            := PerBebouwingsSector/Util/PerPlanRegio/A17_Aansl_LT_TEO[nr_OrgEntity];
+					attribute<nrAsl>        Util_A18_Aansl_LT_BuurtWKO       := PerBebouwingsSector/Util/PerPlanRegio/A18_Aansl_LT_BuurtWKO[nr_OrgEntity];
+					attribute<nrAsl>        Util_A19_Aansl_MT_Restwarmte     := PerBebouwingsSector/Util/PerPlanRegio/A19_Aansl_MT_Restwarmte[nr_OrgEntity];
+					attribute<nrAsl>        Util_A20_Aansl_MT_Geothermie     := PerBebouwingsSector/Util/PerPlanRegio/A20_Aansl_MT_Geothermie[nr_OrgEntity];
+					attribute<nrAsl>        Util_A21_Aansl_MT_WijkWKK        := PerBebouwingsSector/Util/PerPlanRegio/A21_Aansl_MT_WijkWKK[nr_OrgEntity];
+					attribute<nrAsl>        Util_A22_Aansl_MT_BioWKK         := PerBebouwingsSector/Util/PerPlanRegio/A22_Aansl_MT_BioWKK[nr_OrgEntity];
+					attribute<nrAsl>        Util_A23_Aansl_H2                := PerBebouwingsSector/Util/PerPlanRegio/A23_Aansl_H2[nr_OrgEntity];
+					
+					// attribute<nrAsl>        Util_A30_Aansl_LabelA            := PerBebouwingsSector/Util/PerPlanRegio/A30_Aansl_LabelA[nr_OrgEntity];
+					// attribute<nrAsl>        Util_A31_Aansl_LabelB            := PerBebouwingsSector/Util/PerPlanRegio/A31_Aansl_LabelB[nr_OrgEntity];
+					// attribute<nrAsl>        Util_A32_Aansl_LabelC            := PerBebouwingsSector/Util/PerPlanRegio/A32_Aansl_LabelC[nr_OrgEntity];
+					// attribute<nrAsl>        Util_A33_Aansl_LabelD            := PerBebouwingsSector/Util/PerPlanRegio/A33_Aansl_LabelD[nr_OrgEntity];
+					// attribute<nrAsl>        Util_A34_Aansl_LabelE            := PerBebouwingsSector/Util/PerPlanRegio/A34_Aansl_LabelE[nr_OrgEntity];
+					// attribute<nrAsl>        Util_A35_Aansl_LabelF            := PerBebouwingsSector/Util/PerPlanRegio/A35_Aansl_LabelF[nr_OrgEntity];
+				}
+			}
 		}
 		
 		container Schillabels : using = "FolderInfo"
