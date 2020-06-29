@@ -81,7 +81,7 @@ container BebouwingsOperaties
 
 			attribute<Classifications/AfgifteSysteem> AfgifteSysteem_rel := union_data(., Bestaand/AfgifteSysteem_rel, Nieuwbouw/AfgifteSysteem_rel[EchtNieuw/nr_OrgEntity]);
 			attribute<AfnameGebied>                   AfnameGebied_rel   := union_data(., Bestaand/AfnameGebied_rel,   Nieuwbouw/AfnameGebied_rel  [EchtNieuw/nr_OrgEntity]);
-			attribute<Classifications/GebouwOptie>    GebouwOptie_rel    := union_data(., Bestaand/GebouwOptie_rel,    Nieuwbouw/GebouwOptie_rel   [EchtNieuw/nr_OrgEntity]); // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
+			// attribute<Classifications/GebouwOptie>    GebouwOptie_rel    := union_data(., Bestaand/GebouwOptie_rel,    Nieuwbouw/GebouwOptie_rel   [EchtNieuw/nr_OrgEntity]); // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
 			
 			container Gebied
 			{

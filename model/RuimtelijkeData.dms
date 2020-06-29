@@ -16,9 +16,25 @@ container RuimtelijkeData: Using = "Units;Geography;Model", FreeData = "False"
 	{
 		container impl
 		{
-			unit<uint32> selected := range(uint32, 0, strcount(Invoer/StudieGebied, ',') + 1 )
+			unit<uint32> selected1 := range(uint32, 0, strcount(Invoer/StudieGebied_NHZ, ',') + 1 )
 			{
-				attribute<string> values := ReadArray(lowercase(trim(Invoer/StudieGebied)), ., string, 0);
+				attribute<string> values := ReadArray(lowercase(trim(Invoer/StudieGebied_NHZ)), ., string, 0);
+			}
+			unit<uint32> selected2 := range(uint32, 0, strcount(Invoer/StudieGebied_TW, ',') + 1 )
+			{
+				attribute<string> values := ReadArray(lowercase(trim(Invoer/StudieGebied_TW)), ., string, 0);
+			}
+			unit<uint32> selected3 := range(uint32, 0, strcount(Invoer/StudieGebied_AMF, ',') + 1 )
+			{
+				attribute<string> values := ReadArray(lowercase(trim(Invoer/StudieGebied_AMF)), ., string, 0);
+			}
+			unit<uint32> selected4 := range(uint32, 0, strcount(Invoer/StudieGebied_U10_U16, ',') + 1 )
+			{
+				attribute<string> values := ReadArray(lowercase(trim(Invoer/StudieGebied_U10_U16)), ., string, 0);
+			}
+			unit<uint32> selected := union_unit(selected1,selected2,selected3,selected4)
+			{
+				attribute<string> values := union_data(., selected1/values, selected2/values, selected3/values, selected4/values);
 			}
 		}
 		attribute<bool> selected_per_gemeente (RegioIndelingen/gemeente) := impl/selected/values[0] = 'nl'

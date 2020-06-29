@@ -20,9 +20,9 @@ container Referentie
 
 	// Hier kun je meer of minder rekenstappen per jaar gaan definieren. Pas dan ook de onderstaande attribuutdata aan.
 	// Waarschijnlijk moet de eerste rekenstap wel verwijzen naar het eerste zichtjaar en moeten volgende rekenstappen niet naar eerdere jaren verwijzen.	
-	unit<uint8> rekenstap: nrofrows = 3
+	unit<uint8> rekenstap: nrofrows = 5
 	{
-		attribute<units/yr_uint16> Jaar  : [2019, 2030, 2030];
+		attribute<units/yr_uint16> Jaar  : [2019, 2030, 2030, 2050, 2050];
 		
 		// bij label en name kun je eigen rekenstappen opgeven. Deze namen moeten overeen komen met:
 		// - namen van subitems van in Invoer/SpecifiekeInstellingen
@@ -34,8 +34,14 @@ container Referentie
 	
 	container Invoer := SharedInvoer, Using = "Units"
 	{
-		parameter<string> RES_StudieGebied : ['RESNoordHollandZuid']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
-		parameter<string> StudieGebied     := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied, Geography/RegioIndelingen/Energieregio/name)];
+		// parameter<string> RES_StudieGebied_NHZ     : ['RESNoordHollandZuid']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
+		// parameter<string> RES_StudieGebied_TW      : ['RESTwente']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
+		// parameter<string> RES_StudieGebied_AMF     : ['RESAmersfoort']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
+		// parameter<string> RES_StudieGebied_U10_U16 : ['RESU10_U16']; // Deze RES geeft problemen wegens doorsnijding van bestaande warmtenetten.
+		// parameter<string> StudieGebied_NHZ     := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied_NHZ, Geography/RegioIndelingen/Energieregio/name)];
+		// parameter<string> StudieGebied_TW      := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied_TW, Geography/RegioIndelingen/Energieregio/name)];
+		// parameter<string> StudieGebied_AMF     := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied_AMF, Geography/RegioIndelingen/Energieregio/name)];
+		// parameter<string> StudieGebied_U10_U16 := Geography/RegioIndelingen/Energieregio/GM_code_list[rlookup(RES_StudieGebied_U10_U16, Geography/RegioIndelingen/Energieregio/name)];
 		
 		// Include Invoer and defaults settings section, similar for each run
 		#include <%projDir%/model/RuimtelijkeData.dms>
@@ -67,6 +73,8 @@ container Referentie
 			// Per rekenstap kun je hier specifieke instelling overrulen. De lijst van rekenstappen wordt gedefinieerd bij rekenstap
 			container R1_2030 := DefaultInstellingen/Rekenstap/Stap_1;
 			container R2_2030 := DefaultInstellingen/Rekenstap/Stap_2;
+			container R3_2050 := DefaultInstellingen/Rekenstap/Stap_1;
+			container R4_2050 := DefaultInstellingen/Rekenstap/Stap_2;
 		}
 	}
 

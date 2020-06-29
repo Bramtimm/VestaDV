@@ -24,8 +24,9 @@ container LeidraadResultaten: using = "Model"
 			
 			unit<uint8> ReportPeriods : nrofrows = 2
 			{
-				attribute<string> name_src : ['StartJaar','LastRekenstap'];
-				attribute<string> name     := replace(name_src, 'LastRekenstap', Last_Rekenstap);
+				attribute<string> name_src  : ['StartJaar','LastRekenstap'];
+				attribute<string> name      := replace(name_src, 'LastRekenstap', Last_Rekenstap);
+				attribute<string> name_expl := replace(name_src, 'LastRekenstap', Last_Rekenstap_Expl);
 			}
 			
 			parameter<string> RegioNaam_GooiEnVechtstreek    := 'GooiEnVechtstreek';
@@ -71,13 +72,14 @@ container LeidraadResultaten: using = "Model"
 			container PerRekenstap := 
 				for_each_ne(
 					  Settings/ReportPeriods/name
-					, 'PerRekenstap_T('+quote(Settings/ReportPeriods/name)+')'
+					, 'PerRekenstap_T('+quote(Settings/ReportPeriods/name)+','+quote(Settings/ReportPeriods/name_expl)+')'
 				);
 			
 			Template PerRekenstap_T
 			{
 				//
 				parameter<string> ReportRekenstap;
+				parameter<string> ReportRekenstap_expl;
 				//
 			
 				container PerBebouwingsSector := 
@@ -106,6 +108,8 @@ container LeidraadResultaten: using = "Model"
 						attribute<nrAsl>        I09_aantal_woningen	            (Planregio) := ='LeidraadResultaten/'+ReportRekenstap+'/PlanregioResults/Statisch/table/I09_aantal_woningen';
 						attribute<nrAsl>        I10_aantal_utiliteit            (Planregio) := ='LeidraadResultaten/'+ReportRekenstap+'/PlanregioResults/Statisch/table/I10_aantal_utiliteit';
 						attribute<nrWoning>     I11_woningequivalenten          (Planregio) := ='LeidraadResultaten/'+ReportRekenstap+'/PlanregioResults/Statisch/table/I11_woningequivalenten'; //130m2 utiliteit = 1 WEQ
+						attribute<m2>           I12_opp_woningen                (Planregio) := ='MakeDefined(LeidraadResultaten/Exports/ESDL/PerRekenstap/'+ReportRekenstap+'/PerComponent/Woning/Hoofdindicatoren/Table/oppervlakte, 0[m2])';
+						attribute<m2>           I13_opp_utiliteit               (Planregio) := ='MakeDefined(LeidraadResultaten/Exports/ESDL/PerRekenstap/'+ReportRekenstap+'/PerComponent/Util/Hoofdindicatoren/Table/oppervlakte, 0[m2])';
 						attribute<string>       Uitgesloten                     (Planregio) := ='LeidraadResultaten/'+ReportRekenstap+'/PlanregioResults/Statisch/table/I13_Uitgesloten';
 				
 						attribute<GJ_yr_WEQ>    H01_Vraag_Totaal                (Planregio) := ='MakeDefined(LeidraadResultaten/Exports/ESDL/PerRekenstap/'+ReportRekenstap+'/PerComponent/'+BebouwingsSector+'/Hoofdindicatoren/Table/H01_Vraag_totaal, 0[GJ_yr_WEQ])';
@@ -206,6 +210,8 @@ container LeidraadResultaten: using = "Model"
 						attribute<nrAsl>        I09_aantal_woningen	        := PerBebouwingsSector/Woning/PerPlanRegio/I09_aantal_woningen[nr_OrgEntity];
 						attribute<nrAsl>        I10_aantal_utiliteit        := PerBebouwingsSector/Woning/PerPlanRegio/I10_aantal_utiliteit[nr_OrgEntity];
 						attribute<nrWoning>     I11_woningequivalenten      := PerBebouwingsSector/Woning/PerPlanRegio/I11_woningequivalenten[nr_OrgEntity];
+						attribute<m2>           I12_opp_woningen            := PerBebouwingsSector/Woning/PerPlanRegio/I12_opp_woningen[nr_OrgEntity];
+						attribute<m2>           I13_opp_utiliteit           := PerBebouwingsSector/Woning/PerPlanRegio/I13_opp_utiliteit[nr_OrgEntity];
 						attribute<string>       Uitgesloten                 := PerBebouwingsSector/Woning/PerPlanRegio/Uitgesloten[nr_OrgEntity];
 
 						attribute<GJ_yr_WEQ>    Woning_H01_Vraag_Totaal            := PerBebouwingsSector/Woning/PerPlanRegio/H01_Vraag_totaal[nr_OrgEntity];
@@ -313,14 +319,14 @@ container LeidraadResultaten: using = "Model"
 					container BestaandeWoning := 
 						for_each_nedv(
 							  Classifications/schillabel/name
-							, 'sum(float64(TussenResultaten/'+ReportRekenstap+'/AllocatieResultaten/BestaandeWoning/BO/Schillabel_rel == /Classifications/Schillabel/V/'+Classifications/schillabel/name+') * TussenResultaten/'+ReportRekenstap+'/AllocatieResultaten/BestaandeWoning/BO/nrAansluitingen, /TussenResultaten/'+ReportRekenstap+'/StateNaAllocatie/Bebouwing/BestaandeWoning/PlanRegio_rel)'
+							, 'sum(float64(/TussenResultaten/'+ReportRekenstap_expl+'/AllocatieResultaten/BestaandeWoning/BO/Schillabel_rel == /Classifications/Schillabel/V/'+Classifications/schillabel/name+') * /TussenResultaten/'+ReportRekenstap_expl+'/AllocatieResultaten/BestaandeWoning/BO/nrAansluitingen, /TussenResultaten/'+ReportRekenstap_expl+'/StateNaAllocatie/Bebouwing/BestaandeWoning/PlanRegio_rel)'
 							, Invoer/DefaultInstellingen/Basis/PlanRegio
 							, nrAsl
 						);
 					container NieuwbouwWoning := 
 						for_each_nedv(
 							  Classifications/schillabel/name
-							, 'sum(float64(TussenResultaten/'+ReportRekenstap+'/AllocatieResultaten/NieuwbouwWoning/BO/Schillabel_rel == /Classifications/Schillabel/V/'+Classifications/schillabel/name+') * TussenResultaten/'+ReportRekenstap+'/AllocatieResultaten/NieuwbouwWoning/BO/nrAansluitingen, /TussenResultaten/'+ReportRekenstap+'/StateNaAllocatie/Bebouwing/NieuwbouwWoning/PlanRegio_rel)'
+							, 'sum(float64(/TussenResultaten/'+ReportRekenstap_expl+'/AllocatieResultaten/NieuwbouwWoning/BO/Schillabel_rel == /Classifications/Schillabel/V/'+Classifications/schillabel/name+') * /TussenResultaten/'+ReportRekenstap_expl+'/AllocatieResultaten/NieuwbouwWoning/BO/nrAansluitingen, /TussenResultaten/'+ReportRekenstap_expl+'/StateNaAllocatie/Bebouwing/NieuwbouwWoning/PlanRegio_rel)'
 							, Invoer/DefaultInstellingen/Basis/PlanRegio
 							, nrAsl
 						);
@@ -334,7 +340,6 @@ container LeidraadResultaten: using = "Model"
 						);
 				}
 
-				
 				container PerComponent := 
 										for_each_ne(
 											  Classifications/BebouwingsSector/name
@@ -355,8 +360,8 @@ container LeidraadResultaten: using = "Model"
 
 					parameter<bool> isStap0         := ReportRekenstap == 'StartJaar';
 
-					container TussenResultaten      := ='/TussenResultaten/' + ReportRekenstap;
-					container Resultaten            := ='/Resultaten/' + ReportRekenstap;
+					container TussenResultaten      := ='/TussenResultaten/' + ReportRekenstap_expl;
+					container Resultaten            := ='/Resultaten/' + ReportRekenstap_expl;
 
 					container Netwerken             := Resultaten/Netwerken;
 					container EnergyResults         := Resultaten/EnergyResults;
@@ -380,6 +385,8 @@ container LeidraadResultaten: using = "Model"
 
 					container Hoofdindicatoren : using = "PlanregioResults;ZichtJaar"
 					{
+
+						
 						unit<uint32> extensief := Invoer/DefaultInstellingen/Basis/PlanRegio
 						{
 							attribute<bool> IsOngeldig := Hulpvariabelen/Checks/s3GeenLT || Hulpvariabelen/Checks/s2GeenMT;
@@ -586,6 +593,13 @@ container LeidraadResultaten: using = "Model"
 
 							attribute<Eur_m3> H19_waarde_hernieuwbaar_gas          := const(0[Eur_m3] , PlanRegio);
 							attribute<string> H20_beschikbaarheid_hernieuwbaar_gas := const('onbekend', PlanRegio);
+							
+										
+							
+							attribute<m2>    Oppervlakte    := ='add('+AsItemList('sum(bebouwing/'+BebouwingsDomein/name+'/Oppervlakte, bebouwing/'+BebouwingsDomein/name+'/PlanRegio_rel)')+')';
+							// attribute<m2>    Oppervlakte_Util    := BebouwingsSector == 'Util' 
+										// ? bebouwing/BestaandeUtil/Oppervlakte + bebouwing/NieuwbouwUtil/Oppervlakte
+										// : 0[m2];
 						}
 					}
 					
