@@ -14,7 +14,7 @@ template AllocatieResultatenComponent
 	container    VraagKentallen := BO/VraagKentallen;
 	unit<uint32> PlanRegio      := Invoer/SpecifiekeInstellingen/PlanRegio;
 
-	attribute<Classifications/WarmteOptie>        WarmteAllocatie         (BO) := BO/WarmteOptie_rel; // TODO_OV: substitute
+	attribute<Classifications/WarmteOptie>        WarmteAllocatie         (BO) := BO/WarmteOptie_rel; // TODO_OV_RELEASE: substitute
 	attribute<Classifications/WoningtypeBestaand> BebouwingsType          (BO) := BO/BebouwingsType;
 	attribute<bool>                               VeroorzaaktGrondroering (BO) := Classifications/WarmteOptie/isGebiedsOptie[WarmteAllocatie];
 
@@ -201,7 +201,7 @@ template AllocatieResultatenComponent
 
 	container MeterVraag := for_each_nedv(Classifications/GebiedsOptie/name, 'float64(Aandelen/'+Classifications/GebiedsOptie/name+') * (BO/Functioneel/V_RV + BO/Functioneel/V_TW)', BO, GJ_yr)
 	{
-		attribute<GJ_yr> Aardgas       (BO) := BO/Metervraag/V_gas * float64(not(Classifications/WarmteOptie/isGebiedsOptie[WarmteAllocatie]));
+		attribute<GJ_yr> Aardgas       (BO) := BO/Metervraag/V_gas;// * float64(not(Classifications/WarmteOptie/isGebiedsOptie[WarmteAllocatie]));
 		attribute<GJ_yr> Elektriciteit (BO) := BO/Metervraag/V_e + BO/Metervraag/V_app;
 		attribute<GJ_yr> Waterstof     (BO) := BO/Metervraag/V_H2;
 		attribute<GJ_yr> Pellets       (BO) := BO/Metervraag/V_pellets;
@@ -262,6 +262,8 @@ template AllocatieResultatenComponent
 	{
 		attribute<KG_yr> AardGas           (BO) := MeterVraag/AardGas       * prijzen/AardGas/CO2_GJ;
 		attribute<KG_yr> Elektriciteit     (BO) := MeterVraag/Elektriciteit * prijzen/Elektriciteit/CO2_GJ;
+		attribute<KG_yr> Elek_e            (BO) := BO/Metervraag/V_e        * prijzen/Elektriciteit/CO2_GJ;
+		attribute<KG_yr> Elek_app          (BO) := BO/Metervraag/V_app      * prijzen/Elektriciteit/CO2_GJ;
 	}
 }
 

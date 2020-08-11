@@ -39,6 +39,8 @@ container WarmteBronnen
 		attribute<Eur_GJ>        BioMassa_GJ       (classifications/RekenJaar) := overig_results/BioMassa  [overig_tabel_rel];
 		attribute<Eur_GJ>        Kolen_GJ          (classifications/RekenJaar) := overig_results/Kolen_excl[overig_tabel_rel];
 		attribute<Eur_GJ>        KolenCO2_GJ       (classifications/RekenJaar) := overig_results/Kolen_CO2 [overig_tabel_rel];
+		
+		attribute<Eur_GJ>        Waterstof_GJ      (classifications/RekenJaar) := overig_results/Waterstof[overig_tabel_rel];
 	}
 
 	container MetaData: IsHidden = "True"
@@ -132,20 +134,17 @@ container WarmteBronnen
 		}
 		container RekenTypes
 		{
-			attribute<bool>   IsGroenGas (classifications/Rekenstap) := ='union_data(classifications/Rekenstap, '+AsItemList('SpecifiekeInstellingen/'+classifications/Rekenstap/name+'/VoorkEuren/Afweging/IsGroenGas')+')';
+			attribute<Float64> GroenGasFactor (classifications/Rekenstap) := ='union_data(classifications/Rekenstap, '+AsItemList('SpecifiekeInstellingen/'+classifications/Rekenstap/name+'/Voorkeuren/GroenGasFactor')+')';
+			attribute<Float64> H2Factor       (classifications/Rekenstap) := ='union_data(classifications/Rekenstap, '+AsItemList('SpecifiekeInstellingen/'+classifications/Rekenstap/name+'/Voorkeuren/H2Factor')+')';
+			attribute<Float64> GrijsGasFactor (classifications/Rekenstap) := 1.0 - GroenGasFactor;
+			
 			container STEG
 			{
-				// obv (0.20/0.30) * M10[Eur/GJ];
-				// obj M10 = 1000[MJ/GJ]*L10/ 31.65 [MJ/m3], 
-				// obv L10 = gasprijs in [Eur/m3] commodity incl CO2, SDE-heffing, energiebel, excl BTW, geen distributie en transport.
-				
-				parameter<Eur_m3> BlauweWaterstof_m3 := 0.46 [Eur_m3]; // energieinhoud waterstof verdisconteer
-				parameter<Eur_GJ> K_Bws_GJ           := BlauweWaterstof_m3 * (1.0 / Kengetallen/constanten/GasEnergie);
-				parameter<Eur_GJ> Km_GJ_Bws          := (0.2 / 0.3) * K_Bws_GJ;
-
-				attribute<Eur_GJ> K_GJ      (classifications/Rekenstap) := (0.2 / 0.3) * prijzen/K_Gas_GJ [classifications/Rekenstap/RekenJaar_rel];
-				attribute<Eur_GJ> Km_GJ_Def (classifications/Rekenstap) := (0.2 / 0.3) * prijzen/Km_Gas_GJ[classifications/Rekenstap/RekenJaar_rel]; //default kosten in STEG op basis van stoken (groen)gas
-				attribute<Eur_GJ> Km_GJ     (classifications/Rekenstap) := IsGroenGas ? Km_GJ_Bws : Km_GJ_Def;
+				attribute<Eur_GJ> Km_GJ_H2  (classifications/Rekenstap) := (0.2 / 0.3) * prijzen/Waterstof_GJ[classifications/Rekenstap/RekenJaar_rel];
+				attribute<Eur_GJ> K_GJ_Gas  (classifications/Rekenstap) := (0.2 / 0.3) * prijzen/K_Gas_GJ    [classifications/Rekenstap/RekenJaar_rel];
+				attribute<Eur_GJ> Km_GJ_Gas (classifications/Rekenstap) := (0.2 / 0.3) * prijzen/Km_Gas_GJ   [classifications/Rekenstap/RekenJaar_rel];
+				attribute<Eur_GJ> Km_GJ     (classifications/Rekenstap) := H2Factor *  Km_GJ_H2 + (1.0 - H2Factor) * Km_GJ_Gas;
+				attribute<Eur_GJ> K_GJ      (classifications/Rekenstap) := H2Factor *  Km_GJ_H2 + (1.0 - H2Factor) * K_GJ_Gas;
 			}
 
 			container Kolen
@@ -161,11 +160,8 @@ container WarmteBronnen
 
 			container Gasmotor
 			{
-				// M10/0.45 - Q10*1 
-				// obv Q10[Eur/GJ] = elektriciteitsprijs en gros
-				// (Gasprijs/(totaalrendement WKK (0.9)*Percentage warmteoutput WKK (0.75)) - (Elektriciteitsprijs (per GJ) * ((totaalrendement WKK (0.9)* Percentage elektriciteits-output WKK (0.25) )/(totaalrendement WKK (0.9)* Percentage warmte-output WKK (0.75) )))
-				parameter<float64> WarmteAandeel        := 0.75;
-				parameter<float64> Rendement            := 0.90;
+				parameter<float64> WarmteAandeel        := 0.9;
+				parameter<float64> Rendement            := 1.07, Source = "www.pbl.nl/sites/default/files/cms/publicaties/pbl-2018-eindadvies-basisbedragen-SDE-plus-2019_3342.pdf";
 				parameter<float64> ElektriciteitAandeel := 1.0 - WarmteAandeel;
 				container Factoren
 				{
@@ -176,8 +172,9 @@ container WarmteBronnen
 					parameter<float64> Ondergrond    := 0.0;
 					parameter<float64> Opwekking     := 0.0;
 				}
-				attribute<Eur_GJ> K_Gas  (classifications/Rekenstap) := IsGroenGas ? prijzen/K_GrGas_GJ [classifications/Rekenstap/RekenJaar_rel] : prijzen/K_Gas_GJ [classifications/Rekenstap/RekenJaar_rel];
-				attribute<Eur_GJ> Km_Gas (classifications/Rekenstap) := IsGroenGas ? prijzen/Km_GrGas_GJ[classifications/Rekenstap/RekenJaar_rel] : prijzen/Km_Gas_GJ[classifications/Rekenstap/RekenJaar_rel];
+				
+				attribute<Eur_GJ> K_Gas  (classifications/Rekenstap) := prijzen/K_GrGas_GJ [classifications/Rekenstap/RekenJaar_rel] * GroenGasFactor + prijzen/K_Gas_GJ [classifications/Rekenstap/RekenJaar_rel] * GrijsGasFactor;
+				attribute<Eur_GJ> Km_Gas (classifications/Rekenstap) := prijzen/Km_GrGas_GJ[classifications/Rekenstap/RekenJaar_rel] * GroenGasFactor + prijzen/Km_Gas_GJ[classifications/Rekenstap/RekenJaar_rel] * GrijsGasFactor;
 
 				attribute<Eur_GJ>  K_GJ  (classifications/Rekenstap) :=
 					Factoren/Aardgas * K_Gas  + (Factoren/Elektriciteit * prijzen/ElekEnGros_GJ)[classifications/Rekenstap/RekenJaar_rel]; // en gros prijs als opbrengst, dit is excl distributiekosten
@@ -215,27 +212,26 @@ container WarmteBronnen
 			}
 			container BioWKK
 			{
-				// obv (0.20 / 0.30) * N10[Eur/GJ] obv N10 = 122.4 / 16 CONSTANT ! 
 				parameter<float64> WarmteAandeel        := 0.9;
-				parameter<float64> Rendement            := 1.07, Source = "www.pbl.nl/sites/default/files/cms/publicaties/pbl-2018-eindadvies-basisbedragen-SDE-plus-2019_3342.pdf";
+				parameter<float64> Rendement            := 0.8;
 				parameter<float64> ElektriciteitAandeel := 1.0 - WarmteAandeel;
 				container Factoren
 				{
 					parameter<float64> Warmte        := 1.0 / (Rendement * WarmteAandeel);
 					parameter<float64> Elektriciteit := - ElektriciteitAandeel / WarmteAandeel;
 					parameter<float64> Aardgas       := 0.0;
-					parameter<float64> Biogas        := Warmte;
-					parameter<float64> Biovast       := 0.0;
+					parameter<float64> Biogas        := 0.0;
+					parameter<float64> Biovast       := Warmte;
 					parameter<float64> Ondergrond    := 0.0;
 					parameter<float64> Opwekking     := 0.0;
 				}
-				attribute<Eur_GJ> K_Gas   (classifications/Rekenstap) := IsGroenGas ? prijzen/K_GrGas_GJ [classifications/Rekenstap/RekenJaar_rel] : prijzen/K_Gas_GJ [classifications/Rekenstap/RekenJaar_rel];
-				attribute<Eur_GJ> Km_Gas  (classifications/Rekenstap) := IsGroenGas ? prijzen/Km_GrGas_GJ[classifications/Rekenstap/RekenJaar_rel] : prijzen/Km_Gas_GJ[classifications/Rekenstap/RekenJaar_rel];
+				attribute<Eur_GJ> K_Biomassa   (classifications/Rekenstap) := prijzen/BioMassa_GJ [classifications/Rekenstap/RekenJaar_rel];
+				attribute<Eur_GJ> Km_Biomassa  (classifications/Rekenstap) := prijzen/BioMassa_GJ [classifications/Rekenstap/RekenJaar_rel];
 				
-				attribute<Eur_GJ>  K_GJ  (classifications/Rekenstap) := 
-					Factoren/Biogas * K_Gas  + (Factoren/Elektriciteit * prijzen/ElekEnGros_GJ)[classifications/Rekenstap/RekenJaar_rel]; // en gros prijs als opbrengst, dit is excl distributiekosten
-				attribute<Eur_GJ>  Km_GJ (classifications/Rekenstap) := 
-					Factoren/Biogas * Km_Gas + (Factoren/Elektriciteit * prijzen/Km_Elek_GJ   )[classifications/Rekenstap/RekenJaar_rel]; 
+				attribute<Eur_GJ> K_GJ  (classifications/Rekenstap) := 
+					Factoren/Biovast * K_Biomassa  + (Factoren/Elektriciteit * prijzen/ElekEnGros_GJ)[classifications/Rekenstap/RekenJaar_rel]; // en gros prijs als opbrengst, dit is excl distributiekosten
+				attribute<Eur_GJ> Km_GJ (classifications/Rekenstap) := 
+					Factoren/Biovast * Km_Biomassa + (Factoren/Elektriciteit * prijzen/Km_Elek_GJ   )[classifications/Rekenstap/RekenJaar_rel]; 
 			}
 		}
 	}

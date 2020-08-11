@@ -111,6 +111,9 @@ container BebouwingsOperaties
 				attribute<Eur_yr> Kji_gv   (..) := union_data(.., Bestaand/Kapitaallasten/Kji_gv,   Nieuwbouw/Kapitaallasten/Kji_gv  [EchtNieuw/nr_OrgEntity]);
 				attribute<Eur_yr> Kmi_gv   (..) := union_data(.., Bestaand/Kapitaallasten/Kmi_gv,   Nieuwbouw/Kapitaallasten/Kmi_gv  [EchtNieuw/nr_OrgEntity]);
 
+				attribute<Eur_yr> Kji_LTAS (..) := union_data(.., Bestaand/Kapitaallasten/Kji_LTAS, Nieuwbouw/Kapitaallasten/Kji_LTAS);
+				attribute<Eur_yr> Kmi_LTAS (..) := union_data(.., Bestaand/Kapitaallasten/Kmi_LTAS, Nieuwbouw/Kapitaallasten/Kmi_LTAS);
+
 				//Subsidies
 				attribute<Eur_yr> Oji_s_LO_30 (..) := union_data(.., Bestaand/Kapitaallasten/Oji_s_LO_30, Nieuwbouw/Kapitaallasten/Oji_s_LO_30[EchtNieuw/nr_OrgEntity]);
 				attribute<Eur_yr> Oji_s_LO_20 (..) := union_data(.., Bestaand/Kapitaallasten/Oji_s_LO_20, Nieuwbouw/Kapitaallasten/Oji_s_LO_20[EchtNieuw/nr_OrgEntity]);

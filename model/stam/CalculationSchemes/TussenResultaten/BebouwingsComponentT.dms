@@ -67,15 +67,129 @@ template BebouwingsComponentT
 
 	unit<uint32> BO := = IsNieuwbouw ? 'union/result' : 'BebouwingsObjectMetPrevState'
 	{
-		container BebouwingsComponent_UpRef := ..; // TODO_OV: used sporadically, try to avoid this
+		container BebouwingsComponent_UpRef := ..; // TODO_OV: used sporadically, try to avoid this CHECK
 		container NcwRefs                   := BebouwingsComponent_UpRef/NcwRefs;
 		container Opbrengsten               := BebouwingsComponent_UpRef/Opbrengsten;
 		container VraagKentallen            := VraagKentallenComponent;
 		container BcKentallen               := BC_kentallen;
 
+		unit<uint32>    ModelObjectDomain := ModelObject;
 		attribute<Invoer/SpecifiekeInstellingen/PlanRegio> PlanRegio_rel (BO) := BO/buurt_rel;
 		attribute<ModelObject>                             Model_rel     (BO) := rlookup(BO/ModelObjectKey, ModelObject/ModelObjectKey), KeepData = "True";
 
+		unit<uint32>  AfnameGebied         := PrevState/AfnameGebied;
+
+		attribute<Classifications/Schillabel>  Schillabel_rel  (BO) := makedefined(PrevObject/Schillabel_rel[PrevObject_rel], ModelObject/SchilLabel_rel[Model_rel]);
+		attribute<Classifications/WarmteOptie> WarmteOptie_rel (BO) := PrevObject/WarmteOptie_rel[PrevObject_rel];
+
+		
+		attribute<Classifications/Schillabel>  Startlabel_rel  (BO) := =../isNieuwbouw ? 'const(Classifications/schillabel/V/A, BO)' : 'StartJaar/BebouwingsComponenten/' + BCname + '/BO/SchilLabel_rel';
+		
+		container Interpolate
+		{
+			attribute<Classifications/Schillabel>  Defaultlabel_lower (BO) :=
+					not(Schillabel_rel == Classifications/schillabel/V/N) ? (0/0)[Classifications/Schillabel] :
+						Functioneel/RV/A >= Functioneel/RV/N ? Classifications/schillabel/V/A
+					: 	Functioneel/RV/B >= Functioneel/RV/N ? Classifications/schillabel/V/A
+					: 	Functioneel/RV/C >= Functioneel/RV/N ? Classifications/schillabel/V/B
+					: 	Functioneel/RV/D >= Functioneel/RV/N ? Classifications/schillabel/V/C
+					: 	Functioneel/RV/E >= Functioneel/RV/N ? Classifications/schillabel/V/D
+					: 	Functioneel/RV/F >= Functioneel/RV/N ? Classifications/schillabel/V/E
+					: 	Functioneel/RV/G >= Functioneel/RV/N ? Classifications/schillabel/V/F
+					: 	Classifications/schillabel/V/G;
+			
+			attribute<GJ_yr> RV_upper  (BO) := ='merge(Defaultlabel_new, GJ_yr, '+AsItemList('Functioneel/RV_raw/'+Classifications/Schillabel/name)+')';
+			attribute<GJ_yr> RV_lower  (BO) := ='merge(Defaultlabel_lower, GJ_yr, '+AsItemList('Functioneel/RV_raw/'+Classifications/Schillabel/name)+')';
+			attribute<GJ_yr> D_total   (BO) := RV_upper - RV_lower;
+			
+			attribute<ratio> R_upper   (BO) := makedefined(1.0[ratio]-((RV_upper - Functioneel/CurrRV) / D_total), 0.5[ratio]);
+			attribute<ratio> R_lower   (BO) := makedefined(1.0[ratio]-((Functioneel/CurrRV - RV_lower) / D_total), 0.5[ratio]);
+			attribute<ratio> R_sum     (BO) := R_upper + R_lower;
+		}
+		
+		attribute<Classifications/Schillabel>  Defaultlabel_new (BO) :=
+				not(Schillabel_rel == Classifications/schillabel/V/N) ? (0/0)[Classifications/Schillabel] :
+					Functioneel/RV/A >= Functioneel/RV/N ? Classifications/schillabel/V/A
+				: 	Functioneel/RV/B >= Functioneel/RV/N ? Classifications/schillabel/V/B
+				: 	Functioneel/RV/C >= Functioneel/RV/N ? Classifications/schillabel/V/C
+				: 	Functioneel/RV/D >= Functioneel/RV/N ? Classifications/schillabel/V/D
+				: 	Functioneel/RV/E >= Functioneel/RV/N ? Classifications/schillabel/V/E
+				: 	Functioneel/RV/F >= Functioneel/RV/N ? Classifications/schillabel/V/F
+				: 	Classifications/schillabel/V/G;
+		
+		attribute<Classifications/Schillabel>  SchillabelOrDefault_rel (BO) :=
+			Schillabel_rel == Classifications/schillabel/V/N ? Defaultlabel_new	: Schillabel_rel;
+		
+		container Summary
+		{
+			unit<uint32> label_N := subset(Schillabel_rel == Classifications/schillabel/V/N)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_G := subset(Schillabel_rel == Classifications/schillabel/V/G)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_F := subset(Schillabel_rel == Classifications/schillabel/V/F)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_E := subset(Schillabel_rel == Classifications/schillabel/V/E)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_D := subset(Schillabel_rel == Classifications/schillabel/V/D)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_C := subset(Schillabel_rel == Classifications/schillabel/V/C)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_B := subset(Schillabel_rel == Classifications/schillabel/V/B)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			unit<uint32> label_A := subset(Schillabel_rel == Classifications/schillabel/V/A)
+			{			
+				attribute<m2>    MeanOpp (ModelObject) := mean(oppervlakte[nr_orgentity], Model_rel[nr_orgentity]);
+				attribute<nrAsl> nrAansl (ModelObject) := sum(nrAansluitingen[nr_orgentity], Model_rel[nr_orgentity]);
+			}
+			
+			container RV
+			{
+				attribute<GJ_yr> MeanRV_A (ModelObject) := mean(Functioneel/RV/A, Model_rel);
+				attribute<GJ_yr> MeanRV_B (ModelObject) := mean(Functioneel/RV/B, Model_rel);
+				attribute<GJ_yr> MeanRV_C (ModelObject) := mean(Functioneel/RV/C, Model_rel);
+				attribute<GJ_yr> MeanRV_D (ModelObject) := mean(Functioneel/RV/D, Model_rel);
+				attribute<GJ_yr> MeanRV_E (ModelObject) := mean(Functioneel/RV/E, Model_rel);
+				attribute<GJ_yr> MeanRV_F (ModelObject) := mean(Functioneel/RV/F, Model_rel);
+				attribute<GJ_yr> MeanRV_G (ModelObject) := mean(Functioneel/RV/G, Model_rel);
+				
+				attribute<GJ_yr> Besparing_B (ModelObject) := mean(Functioneel/CurrRV - Functioneel/RV/B, Model_rel);
+				attribute<GJ_yr> Besparing_D (ModelObject) := mean(Functioneel/CurrRV - Functioneel/RV/D, Model_rel);
+			}
+		}
+		
+		container InstallatiePerProduct := for_each_nedv(Classifications/Product/name
+		, 'PrevObject/InstallatiePerProduct/'+Classifications/Product/name+'[PrevObject_rel]'
+		, BO
+		, Classifications/Installatie
+		)
+		{
+			attribute<Classifications/Installatie> Dak (BO) := const(Classifications/Installatie/V/geen, BO); // for future use
+		}
+
+		attribute<Classifications/AfgifteSysteem> AfgifteSysteem_rel (BO) := PrevObject/AfgifteSysteem_rel[PrevObject_rel];
+		attribute<AfnameGebied>                   AfnameGebied_rel   (BO) := PrevObject/AfnameGebied_rel[PrevObject_rel];
+		attribute<Classifications/GebouwOptie>    GebouwOptie_rel    (BO) := PrevObject/GebouwOptie_rel[PrevObject_rel]; // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
 		attribute<Geography/rdc_grids/m100>       gridm100_rel       (BO) := point[Geography/rdc_grids/m100];
 
 		attribute<bool> IsMeergezins (.) := BebouwingsTypeDomein/IsMeergezins[BebouwingsType];
@@ -117,7 +231,8 @@ template BebouwingsComponentT
 			attribute<ratio> GTF_K    (..) := switch(case(BCc=='t', Vermogens/GTF_t_K   ) , case(BCc=='u', Vermogens/GTF_u_K   ), Vermogens/GTF_w_K   ) ;
 			attribute<ratio> GTF_Enet (..) := switch(case(BCc=='t', Vermogens/GTF_t_Enet) , case(BCc=='u', Vermogens/GTF_u_Enet), Vermogens/GTF_w_Enet) ;
 
-			attribute<kW>    ASW_RVmt (..) := =( BCname == 'BestaandeUtil' || BCname == 'NieuwBouwUtil' ) ? 'Vermogens/ASW_RVmt_u_opp_specific[BebouwingsType] * Oppervlakte' : 'ASW_RVmt_flat'; //Vermogens/ASW_RVmt_u_opp_specific[BebouwingsType]
+			attribute<kW>    ASW_RVmt (..) := =( BCname == 'BestaandeUtil' || BCname == 'NieuwBouwUtil' ) ? 'Vermogens/ASW_RVmt_u_opp_specific[BebouwingsType] * Oppervlakte' : 'ASW_RVmt_flat';
+			attribute<kW>    ASW_RVlt (..) := =( BCname == 'BestaandeUtil' || BCname == 'NieuwBouwUtil' ) ? 'Vermogens/ASW_RVlt_u_opp_specific[BebouwingsType] * Oppervlakte' : 'ASW_RVlt_flat';
 			
 			attribute<kW>    ASW_RVmt_flat (..) :=  
 				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_RVmt_t_opp) , case(BCc=='u', Vermogens/ASW_RVmt_u_opp), case(BCc=='wl',Vermogens/ASW_RVmt_wl_opp), Vermogens/ASW_RVmt_wh_opp)
@@ -127,7 +242,7 @@ template BebouwingsComponentT
 				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_TWmt_t_opp) , case(BCc=='u', Vermogens/ASW_TWmt_u_opp), case(BCc=='wl',Vermogens/ASW_TWmt_wl_opp), Vermogens/ASW_TWmt_wh_opp)
 				+ nrAansluitingen * switch(case(BCc=='t', Vermogens/ASW_TWmt_t_asl) , case(BCc=='u', Vermogens/ASW_TWmt_u_asl), case(BCc=='wl',Vermogens/ASW_TWmt_wl_asl), Vermogens/ASW_TWmt_wh_asl);
 
-			attribute<kW>    ASW_RVlt (..) :=
+			attribute<kW>    ASW_RVlt_flat (..) :=
 				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_RVlt_t_opp) , case(BCc=='u', Vermogens/ASW_RVlt_u_opp), case(BCc=='wl',Vermogens/ASW_RVlt_wl_opp), Vermogens/ASW_RVlt_wh_opp)
 				+ nrAansluitingen * switch(case(BCc=='t', Vermogens/ASW_RVlt_t_asl) , case(BCc=='u', Vermogens/ASW_RVlt_u_asl), case(BCc=='wl',Vermogens/ASW_RVlt_wl_asl), Vermogens/ASW_RVlt_wh_asl);
 
@@ -136,8 +251,8 @@ template BebouwingsComponentT
 				+ nrAansluitingen * switch(case(BCc=='t', Vermogens/ASW_TWlt_t_asl) , case(BCc=='u', Vermogens/ASW_TWlt_u_asl), case(BCc=='wl',Vermogens/ASW_TWlt_wl_asl), Vermogens/ASW_TWlt_wh_asl);
 
 			attribute<kW>    ASW_K    (..) :=
-				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_K_t_opp)    , case(BCc=='u', Vermogens/ASW_K_u_opp), case(BCc=='wl',Vermogens/ASW_K_wl_opp), Vermogens/ASW_K_wh_opp)
-				+ nrAansluitingen * switch(case(BCc=='t', Vermogens/ASW_K_t_asl)    , case(BCc=='u', Vermogens/ASW_K_u_asl), case(BCc=='wl',Vermogens/ASW_K_wl_asl), Vermogens/ASW_K_wh_asl);
+				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_K_t_opp)    , case(BCc=='u', Vermogens/ASW_K_u_opp),    case(BCc=='wl',Vermogens/ASW_K_wl_opp),    Vermogens/ASW_K_wh_opp)
+				+ nrAansluitingen * switch(case(BCc=='t', Vermogens/ASW_K_t_asl)    , case(BCc=='u', Vermogens/ASW_K_u_asl),    case(BCc=='wl',Vermogens/ASW_K_wl_asl),    Vermogens/ASW_K_wh_asl);
 
 			attribute<kW>    ASW_Eapp (..) :=
 				  Oppervlakte     * switch(case(BCc=='t', Vermogens/ASW_Eapp_t_opp) , case(BCc=='u', Vermogens/ASW_Eapp_u_opp), case(BCc=='wl',Vermogens/ASW_Eapp_wl_opp), Vermogens/ASW_Eapp_wh_opp)
@@ -171,7 +286,7 @@ template BebouwingsComponentT
 			attribute<GJ_yr> EA(..) := (nrAansluitingen * ModelObject/V_EA_asl [Model_rel] + Oppervlakte * ModelObject/V_EA_opp [Model_rel]) * DragerSpecifiekeOpties/ElektrischeApparatuur;
 
 			// TODO_OV, OPTIMIZE, V_RV_asl/@SL@ alleen meenemen indien niet allemaal 0, zoals bij utiliteiten wel het geval is
-			container RV := for_each_nedv(Classifications/Schillabel/name
+			container RV_raw := for_each_nedv(Classifications/Schillabel/name
 			 , replace(
 				'(nrAansluitingen * ModelObject/V_RV_asl/@SL@[Model_rel] + Oppervlakte * ModelObject/V_RV_opp/@SL@[Model_rel])'
 					'* DragerSpecifiekeOpties/RuimteVerwarming'
@@ -180,9 +295,21 @@ template BebouwingsComponentT
 			 ,..
 			 , GJ_yr
 			);
+			
+			container RV := RV_raw
+			{			
+				attribute<GJ_yr> A (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/A ? min_elem(StartlabelRV, RV_raw/A) : RV_raw/A;
+				attribute<GJ_yr> B (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/B ? min_elem(StartlabelRV, RV_raw/B) : RV_raw/B;
+				attribute<GJ_yr> C (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/C ? min_elem(StartlabelRV, RV_raw/C) : RV_raw/C;
+				attribute<GJ_yr> D (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/D ? min_elem(StartlabelRV, RV_raw/D) : RV_raw/D;
+				attribute<GJ_yr> E (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/E ? min_elem(StartlabelRV, RV_raw/E) : RV_raw/E;
+				attribute<GJ_yr> F (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/F ? min_elem(StartlabelRV, RV_raw/F) : RV_raw/F;
+				attribute<GJ_yr> G (...) := not(Startlabel_rel == Classifications/Schillabel/V/N) && Startlabel_rel > Classifications/Schillabel/V/G ? min_elem(StartlabelRV, RV_raw/G) : RV_raw/G;
+			}
 
-			attribute<GJ_yr> CurrRV    (..) := ='merge(Schillabel_rel, GJ_yr, '+AsItemList('RV/'+Classifications/Schillabel/name)+')';	
-			attribute<GJ_yr> Ventilatie(..) := =
+			attribute<GJ_yr> CurrRV       (..) := ='merge(Schillabel_rel, GJ_yr, '+AsItemList('RV_raw/'+Classifications/Schillabel/name)+')';	
+			attribute<GJ_yr> StartlabelRV (..) := ='merge(Startlabel_rel, GJ_yr, '+AsItemList('RV_raw/'+Classifications/Schillabel/name)+')';
+			attribute<GJ_yr> Ventilatie   (..) := =
 				'('
 					+ (all(ModelObject/V_Vent_asl == 0[GJ_yr_asl]) ? '' : 'NrAansluitingen * ModelObject/V_Vent_asl + ')
 					+ 'Oppervlakte * ModelObject/V_Vent_opp[Model_rel]'
@@ -346,7 +473,7 @@ template BebouwingsComponentT
 		attribute<string> WarmteOptie (BO) := Classifications/WarmteOptie/name[WarmteOptie_rel];
 	}
 
-	container Kapitaallasten := results/Kapitaallasten;
+//REMOVE, dit wordt bepaald in StateNaAllocatie	container Kapitaallasten := results/Kapitaallasten;
 
 	container BC_kentallen := kengetallen/BCkentallen/BC_kentallen(
 		Schuiven/EfficiencySchuif,
@@ -363,9 +490,6 @@ template BebouwingsComponentT
 		BebouwingsTypeDomein);
 
 	// voor info over gebruik hWP etc voor RW gelieve de resulterende InstallatiePerProduct te raadplegen
-
-//REMOVE	attribute<Eur_yr> KoudeAllocatie (BO) := const( 0[Eur_yr], BO);
-//REMOVE	attribute<Eur_yr> Om_Comfort     (BO) := const( 0[Eur_yr], BO); //placeholders om statenaallocatie te kunnen initialiseren, TODO_OV: remove
 
 	container Functioneel2
 	{
@@ -422,33 +546,9 @@ template BebouwingsComponentT
 		container GebouwOpties  := BebouwingsComponent_UpRef/GebouwOpties;
 		container BC_kentallen  := BebouwingsComponent_UpRef/BC_kentallen;
 		container Functioneel   := BebouwingsComponent_UpRef/BO/Functioneel;
-
-		container Kapitaallasten
-		{
-			container PrevResults := =.../IsNieuwbouw ? 'Union/result/Kapitaallasten' : 'PrevObject/Kapitaallasten';
-			//Aansluitbijdrages
-			attribute<Eur_yr> Kji_Asl_Enet (BO) := PrevResults/Kji_Asl_Enet;
-			attribute<Eur_yr> Kmi_Asl_Enet (BO) := PrevResults/Kmi_Asl_Enet;
-			attribute<Eur_yr> Kji_Asl_Gnet (BO) := PrevResults/Kji_Asl_Gnet;
-			attribute<Eur_yr> Kmi_Asl_Gnet (BO) := PrevResults/Kmi_Asl_Gnet;
-
-			//Investeringen
-			attribute<Eur_yr> Kji30_LO (BO) := PrevResults/Kji30_LO;
-			attribute<Eur_yr> Kmi30_LO (BO) := PrevResults/Kmi30_LO;
-			attribute<Eur_yr> Kji20_LO (BO) := PrevResults/Kji20_LO;
-			attribute<Eur_yr> Kmi20_LO (BO) := PrevResults/Kmi20_LO;
-			attribute<Eur_yr> Kji15_LO (BO) := PrevResults/Kji15_LO;
-			attribute<Eur_yr> Kmi15_LO (BO) := PrevResults/Kmi15_LO;
-			attribute<Eur_yr> Kji_gv   (BO) := PrevResults/Kji_gv;
-			attribute<Eur_yr> Kmi_gv   (BO) := PrevResults/Kmi_gv;
-
-			//Subsidies
-			attribute<Eur_yr> Oji_s_LO_30 (BO) := PrevResults/Oji_s_LO_30;
-			attribute<Eur_yr> Oji_s_LO_20 (BO) := PrevResults/Oji_s_LO_20;
-			attribute<Eur_yr> Oji_s_LO_15 (BO) := PrevResults/Oji_s_LO_15;
-			attribute<Eur_yr> Oji_s_gv    (BO) := PrevResults/Oji_s_gv;
-		}
-
+		
+		container OrgKapitaallasten := = ../IsNieuwbouw ? 'Union/result/Kapitaallasten' : 'PrevObject/Kapitaallasten';
+		
 		container Warmtewet := Functioneel2
 		{
 			attribute<GJ_yr> V_gas (BO) := ='merge(GebouwOptie_rel, GJ_yr, '+AsItemList('GebouwOpties/'+BcGebouwOptie/name+'/Metervraag/gas')+')';
@@ -457,7 +557,7 @@ template BebouwingsComponentT
 			{
 				attribute<GJ_yr> V_gas    := ../V_gas[nr_OrgEntity];
 				attribute<GJ_yr> V_warmte := V_RV[nr_OrgEntity] + V_TW[nr_OrgEntity];
-				//TODO_OV bij V_warmte aftrek eventuele installaties die al een deel van de vraag vullen binnen deze groep (bijv Zonneboilers)
+				//TODO_OV bij V_warmte aftrek eventuele installaties die al een deel van de vraag vullen binnen deze groep (bijv Zonneboilers, future use)
 			}
 			parameter<float64> PrijsFactor_impl :=  sum(GasVerbruikers/V_gas) / sum(GasVerbruikers/V_warmte) * VoorkEuren/MinderDanAndersFactor;
 			parameter<float64> PrijsFactor_corr :=  MakeDefined(PrijsFactor_impl, 1.25);

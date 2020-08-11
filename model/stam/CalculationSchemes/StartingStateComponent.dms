@@ -20,7 +20,8 @@ template StartingStateComponent
 
 		// =============== attributen die per Rekenstap kunnen wijzigen door toepassing van GebouwOpties
 		attribute<Classifications/SchilLabel>  SchilLabel_rel := =(BebouwingsComponent_rel == Classifications/BebouwingsComponent/V/BestaandeWoning) 
-			? 'MakeDefined(BebouwingsObjectSrc/SchilLabel_rel, ModelObject/SchilLabel_rel[ ModelObject_rel])'
+//			? 'MakeDefined(BebouwingsObjectSrc/SchilLabel_rel, ModelObject/SchilLabel_rel[ ModelObject_rel])'
+			? 'MakeDefined(BebouwingsObjectSrc/SchilLabel_rel, Classifications/schillabel/V/N)'
 			: 'ModelObject/SchilLabel_rel[ ModelObject_rel]';
 	
 		attribute<Classifications/GebouwOptie> GebouwOptie_rel := ModelObject/StartOptie_rel[ModelObject_rel]; // laast toegepaste optie
@@ -90,18 +91,16 @@ template StartingStateComponent
 			attribute<Eur_yr> Kmi15_LO (results) := const(0[Eur_yr], results);
 			attribute<Eur_yr> Kji_gv   (results) := const(0[Eur_yr], results);
 			attribute<Eur_yr> Kmi_gv   (results) := const(0[Eur_yr], results);
+			attribute<Eur_yr> Kj_gv_incentive (results) := const(0[Eur_yr], results);
+
+			attribute<Eur_yr> Kji_LTAS (results) := const(0[Eur_yr], results);
+			attribute<Eur_yr> Kmi_LTAS (results) := const(0[Eur_yr], results);
 
 			//Subsidies
 			attribute<Eur_yr> Oji_s_LO_30 (results) := const(0[Eur_yr], results);
 			attribute<Eur_yr> Oji_s_LO_20 (results) := const(0[Eur_yr], results);
 			attribute<Eur_yr> Oji_s_LO_15 (results) := const(0[Eur_yr], results);
-			attribute<Eur_yr> Oji_s_gv    (results) := const(0[Eur_yr], results);
-		}
-
-		container CumulatieveInvesteringen // Was Sprongen en Kosten, TODO_OV: uitzoeken wat gecomuleerd moet worden en hoe bij te houden per age en (resterende) duration
-		{
-			attribute<float64> Ki_gv           (results) := const(0[Eur]   , results);
-			attribute<Eur_yr>  Kj_gv_incentive (results) := const(0[Eur_yr], results);
+			attribute<Eur_yr> Oji_s_gv    (results) := const(0[Eur_yr], results);			
 		}
 
 		// =============== attributen die ook per GebiedOptie kunnen wijzigen

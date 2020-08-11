@@ -18,12 +18,19 @@ template GebouwOptieT
 	parameter<string> SprongSuffix     :=  AltijdSprong ? '[0[SchilLabelDomain]]' : '';
 	unit<uint32>      SchilLabelDomain := =AltijdSprong ? 'range(uint32, 0, 1)' : 'BebouwingsObject';
 
+	attribute<Classifications/SchilLabel> Defaultlabel (SchilLabelDomain) :=  BO/Defaultlabel_new;
+	
 	attribute<Classifications/SchilLabel> SchilLabel_rel (SchilLabelDomain) := = AltijdSprong
 		? 'union_data(SchilLabelDomain, SchilLabel_rel_formeel)'
 		: SomsSprong
-			? 'min_elem(BebouwingsObject/schillabel_rel, SchilLabel_rel_formeel)'
+			? 'BebouwingsObject/schillabel_rel == Classifications/schillabel/V/N && Defaultlabel <= SchilLabel_rel_formeel
+			? BebouwingsObject/schillabel_rel
+			: min_elem(BebouwingsObject/schillabel_rel, SchilLabel_rel_formeel)'
 			: 'BebouwingsObject/schillabel_rel';
 
+	attribute<Classifications/Schillabel>  SchillabelOrDefault_rel (SchilLabelDomain) :=
+		Schillabel_rel == Classifications/schillabel/V/N ? Defaultlabel : Schillabel_rel;
+			
 	// InstallatiePerProduct geeft per BebouwingsObject of per SchilLabel voor ieder Product de te kiezen of al aanwezige installatie
 	
 	container InstallatiePerProduct := for_each_nedv(Classifications/Product/name
@@ -36,7 +43,7 @@ template GebouwOptieT
 
 	// Performance_rel geeft per BebouwingsObject of per SchilLabel voor ieder Product het performance profiel obv (InstallatieNaam, SchilLabel of x, ProductType {RV, TW of K} )
 	container Performance_key1 := for_each_nedv(Classifications/Product/name
-		, 'Classifications/Installatie/name[InstallatiePerProduct/'+Classifications/Product/name+']+''.'' + Classifications/SchilLabel/name[SchilLabel_rel] + ''.' + Classifications/Product/TypeName+''''
+		, 'Classifications/Installatie/name[InstallatiePerProduct/'+Classifications/Product/name+']+''.'' + Classifications/SchilLabel/name[SchillabelOrDefault_rel] + ''.' + Classifications/Product/TypeName+''''
 		, SchilLabelDomain
 		, string
 		)
@@ -110,6 +117,7 @@ template GebouwOptieT
 				? BebouwingsObject/BCkentallen/Ki_LTAS_h_asl 
 				: BebouwingsObject/BCkentallen/Ki_LTAS_l_asl) * BebouwingsObject/nrAansluitingen + BebouwingsObject/BCkentallen/Ki_LTAS_opp * BebouwingsObject/Oppervlakte
 			: const(0[Eur], BebouwingsObject);
+			
 
 	parameter<string> KX_expr :=
 		'add('
@@ -146,6 +154,10 @@ template GebouwOptieT
 			? 'BebouwingsObject/Functioneel/RV/'+Classifications/SchilLabel/name[SchilLabel_rel_formeel]
 			: 'merge(SchilLabel_rel, GJ_yr, '+AsItemList('BebouwingsObject/Functioneel/RV/'+Classifications/SchilLabel/name)+')';
 
+			
+		attribute<GJ_yr> DeltaRV (BebouwingsObject) := BebouwingsObject/Functioneel/CurrRV - RV;
+		attribute<bool>  NegDelta(BebouwingsObject) := DeltaRV < 0.0[GJ_yr];
+			
 		attribute<GJ_yr>   TW  (BebouwingsObject) := BebouwingsObject/Functioneel/TW;
 		attribute<GJ_yr>   K   (BebouwingsObject) := BebouwingsObject/Functioneel/K ;
 
@@ -180,7 +192,7 @@ template GebouwOptieT
 			? 'add('+AsItemList(MeterVraagExpr_asVector, BemeterdeGebouwInput_rel_asVector)+')'
 			: 'const(0[GJ_yr], BebouwingsObject)';
 
-		// TODO_OV: check waarom 0 bij alle Input in VRw ?
+		// TODO_OV_RELEASE: check waarom 0 bij alle Input in VRw ?
 		attribute<string> aggr_OudLabel(Classifications/BemeterdeGebouwInput) := 
 			replace('add('++AsItemList(replace('BemeterdeGebouwInput_rel/@P == Classifications/BemeterdeGebouwInput/V/@I ? metervraag_base/@P: 0[GJ_yr]', '@P', Classifications/Product/name))+')'
 			, '@I', Classifications/BemeterdeGebouwInput/name
@@ -235,7 +247,8 @@ template GebouwOptieT
 	
 	container metervraag := metervraag_aggr // inherit all, but override 'e'
 	{
-		attribute<GJ_yr> e(BebouwingsObject) := metervraag_aggr/e + eEffect/Totaal; // TODO_OV: Splitsen naar Functioneel/PompEnergie, VentilatieKosten_eg, Functioneel/Apparatuur
+		// TODO_OV MAIL -> Folckert relatie eEffect RV en PompEnergie en opname PompEnergie en/of eEffect in FLOW tabellen.
+		attribute<GJ_yr> e(BebouwingsObject) := metervraag_aggr/e + eEffect/Totaal; // TODO_OV_RELEASE tbv FLOW: Splitsen naar Functioneel/PompEnergie, VentilatieKosten_eg, Functioneel/Apparatuur
 	}
 	
 	container meterprijzen
@@ -295,14 +308,17 @@ template GebouwOptieT
 	attribute<Eur> Oi20_s_LO (BebouwingsObject) := Ki20_LO * BC/EIA_Opties/Rs_LokaleOpwekking;
 	attribute<Eur> Oi15_s_LO (BebouwingsObject) := Ki15_LO * BC/EIA_Opties/Rs_LokaleOpwekking; 
 	attribute<Eur> Oi_s_GV   (BebouwingsObject) := Ki_gv   * BC/EIA_Opties/Rs_GebouwVerbetering; 
+	
+	attribute<Eur_yr> Kj_gv_incentive (BebouwingsObject) := 
+		  Kj_verbruik            * BC/EIA_Opties/R_VerbruikSplitIncentiveFactor
+		+ Kj_vastrecht           * BC/EIA_Opties/R_VastrechtSplitIncentiveFactor;
 
 	attribute<Eur_yr> kosten_j (BebouwingsObject) :=
 		  Kji_GV * S_gv          * BC/BTW_Factor_gv
 		+ Kji_LO * S_lo          * BC/BTW_Factor
 		+ Kji_LTAS               * BC/BTW_Factor
 		+ (Kj_OH_LO + Kj_Adm_LO) * BC/BTW_Factor
-		+ Kj_verbruik            * BC/EIA_Opties/R_VerbruikSplitIncentiveFactor  * BC/BTW_Factor
-		+ Kj_vastrecht           * BC/EIA_Opties/R_VastrechtSplitIncentiveFactor * BC/BTW_Factor
+		+ Kj_gv_incentive        * BC/BTW_Factor
 		;
 
 	attribute<Eur_yr> kosten_m(BebouwingsObject) := 
