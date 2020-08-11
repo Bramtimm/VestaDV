@@ -5,9 +5,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 template BebouwingsComponentT
-{
+{ 
 	// begin case parameters
-	unit<uint32>      BebouwingsObjectZonderState;
+	unit<uint32>      BebouwingsObjectZonderNieuwbouw;
 	parameter<string> BCname;
 	parameter<bool>   IsNieuwbouw;
 	parameter<bool>   HasResterendFactors;
@@ -41,31 +41,9 @@ template BebouwingsComponentT
 
 	unit<uint8> BebouwingsTypeDomein := BO/BebouwingsTypeDomein;
 
-	unit<uint32> BebouwingsObjectMetPrevState := BebouwingsObjectZonderState
-	{
-		unit<uint32>  AfnameGebied         := PrevState/AfnameGebied;
+	container union := =IsNieuwbouw ? 'CalculationSchemes/BebouwingsOperaties/union(PrevObject, BebouwingsObjectZonderNieuwbouw)' : '..';
 
-		attribute<PrevObject> PrevObject_rel := rlookup(code, PrevObject/code);
-		
-		attribute<Classifications/Schillabel>  Schillabel_rel  := PrevObject/Schillabel_rel [PrevObject_rel];
-		attribute<Classifications/WarmteOptie> WarmteOptie_rel := PrevObject/WarmteOptie_rel[PrevObject_rel];
-
-		container InstallatiePerProduct := for_each_nedv(Classifications/Product/name
-			, 'PrevObject/InstallatiePerProduct/'+Classifications/Product/name+'[PrevObject_rel]'
-			, ., Classifications/Installatie
-		)
-		{
-			attribute<Classifications/Installatie> Dak (..) := const(Classifications/Installatie/V/geen, BO); //TODO_OV
-		}
-
-		attribute<Classifications/AfgifteSysteem> AfgifteSysteem_rel := PrevObject/AfgifteSysteem_rel[PrevObject_rel];
-		attribute<AfnameGebied>                   AfnameGebied_rel   := PrevObject/AfnameGebied_rel[PrevObject_rel];
-		attribute<Classifications/GebouwOptie>    GebouwOptie_rel    := PrevObject/GebouwOptie_rel[PrevObject_rel]; // REMOVE, OBSOLETE, vervangen door Schillabel_rel, InstallatiePerProduct en GebiedsOptie
-	}
-	
-	container union := =IsNieuwbouw ? 'CalculationSchemes/BebouwingsOperaties/union(PrevObject, BebouwingsObjectZonderState)' : '..';
-
-	unit<uint32> BO := = IsNieuwbouw ? 'union/result' : 'BebouwingsObjectMetPrevState'
+	unit<uint32> BO := = IsNieuwbouw ? 'union/result' : 'BebouwingsObjectZonderNieuwbouw'
 	{
 		container BebouwingsComponent_UpRef := ..; // TODO_OV: used sporadically, try to avoid this CHECK
 		container NcwRefs                   := BebouwingsComponent_UpRef/NcwRefs;
@@ -76,6 +54,7 @@ template BebouwingsComponentT
 		unit<uint32>    ModelObjectDomain := ModelObject;
 		attribute<Invoer/SpecifiekeInstellingen/PlanRegio> PlanRegio_rel (BO) := BO/buurt_rel;
 		attribute<ModelObject>                             Model_rel     (BO) := rlookup(BO/ModelObjectKey, ModelObject/ModelObjectKey), KeepData = "True";
+		attribute<PrevObject>                              PrevObject_rel(BO) := rlookup(BO/code, PrevObject/code);
 
 		unit<uint32>  AfnameGebied         := PrevState/AfnameGebied;
 

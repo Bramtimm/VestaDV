@@ -5,9 +5,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 container LeidraadResultaten: using = "Model"
-{   
+{    
 	container Exports
-	{
+	{ 
 		unit<uint32> PlanRegio           := Invoer/SpecifiekeInstellingen/PlanRegio;
 		unit<uint32> BestaandeWoningen   := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeWoning;
 		unit<uint32> BestaandeUtil       := /Invoer/RuimtelijkeData/Bebouwing/Impl/BestaandeUtil;
@@ -445,7 +445,7 @@ container LeidraadResultaten: using = "Model"
 
 							attribute<GJ_yr> H09_Input_aardgas := ='IsOngeldig
 								? (0/0)[GJ_yr]
-								: (Statisch/IsUitgesloten || GroenGas || nrWEQ == 0[nrWoning])
+								: (Statisch/IsUitgesloten || nrWEQ == 0[nrWoning])
 									? 0[GJ_yr]
 									: MakeDefined(
 										add('+AsItemList('R_AardG * sum(Allocatie/'+BebouwingsDomein/name+'/metervraag/Aardgas, bebouwing/'+BebouwingsDomein/name+'/PlanRegio_rel)')+')
@@ -453,11 +453,11 @@ container LeidraadResultaten: using = "Model"
 										+ R_AardG * StateNaAllocatie/totaal/verbruik/V_wd_gas
 										+ R_AardG * StateNaAllocatie/totaal/verbruik/V_ow_gas
 										+ WarmteBestaand/V_Bijstook
-									 ,0[GJ_yr])';
-
+									 ,0[GJ_yr]) * (1.0 - GroenGasFactor)';
+									 
 							attribute<GJ_yr> H10_Input_duurzaamgas := ='IsOngeldig
 								? (0/0)[GJ_yr]
-								: (Statisch/IsUitgesloten || !GroenGas || nrWEQ == 0[nrWoning])
+								: (Statisch/IsUitgesloten || nrWEQ == 0[nrWoning])
 									? 0[GJ_yr]
 									: MakeDefined(
 										add('+AsItemList('R_AardG * sum(Allocatie/'+BebouwingsDomein/name+'/metervraag/Aardgas, bebouwing/'+BebouwingsDomein/name+'/PlanRegio_rel)')+')
@@ -466,7 +466,7 @@ container LeidraadResultaten: using = "Model"
 										+ R_AardG * StateNaAllocatie/totaal/verbruik/V_ow_gas
 										+ R_AardG * StateNaAllocatie/totaal/verbruik/V_H2
 										+ WarmteBestaand/V_Bijstook
-									 ,0[GJ_yr])';
+								,0[GJ_yr]) * GroenGasFactor';
 
 							attribute<GJ_yr> H11_Input_elektriciteit := ='IsOngeldig
 								? (0/0)[GJ_yr]
@@ -629,11 +629,11 @@ container LeidraadResultaten: using = "Model"
 
 						attribute<nrAsl> A01_Aansl_aardgas :=
 							round(
-								(Statisch/IsUitgesloten || GroenGas)
+								(Statisch/IsUitgesloten)
 									? 0[nrAsl]
 									: BebouwingsSector == 'Woning' 
-										? MakeDefined(R_AardG * Allocatie/aant_g_aansl_woning_per_planregio,0[nrAsl])
-										: MakeDefined(R_AardG * Allocatie/aant_g_aansl_util_per_planregio,0[nrAsl])
+										? MakeDefined(R_AardG * Allocatie/aant_g_aansl_woning_per_planregio,0[nrAsl]) * (1.0 - GroenGasFactor)
+										: MakeDefined(R_AardG * Allocatie/aant_g_aansl_util_per_planregio,0[nrAsl]) * (1.0 - GroenGasFactor)
 							)[nrAsl];
 
 						attribute<nrAsl> A02_Aansl_eWP := ='
@@ -694,13 +694,13 @@ container LeidraadResultaten: using = "Model"
 
 						attribute<nrAsl> A06_Aansl_HR_HG := ='
 							round(
-								(Statisch/IsUitgesloten || !GroenGas)
+								(Statisch/IsUitgesloten)
 										? 0[nrAsl]
 										: MakeDefined(
 											add('+AsItemList('R_AardG * sum(Allocatie/'+BebouwingsDomein/name+'/BO/Aansluitingen/Gnet * float64(Allocatie/'+BebouwingsDomein/name+'/BO/Aansluitingen/Enet_hwp   == 0[nrAsl])
 												, Allocatie/'+BebouwingsDomein/name+'/BO/Planregio_rel)')+')
 											 + R_AardG * nrAansluitinging/WaterstofHR
-											,0[nrAsl])
+											,0[nrAsl]) * GroenGasFactor
 							)[nrAsl]';
 					}
 					
